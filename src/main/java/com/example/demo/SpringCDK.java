@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,12 +15,15 @@ import org.springframework.context.annotation.PropertySource;
 })
 public class SpringCDK implements CommandLineRunner {
 
+	@Autowired
+	Root root;
+
 	public static void main(final String[] args) {
 		SpringApplication.run(SpringCDK.class, args);
 	}
 
 	@Override
 	public void run(String... args) {
-		new Root();
+		root.synth();
 	}
 }

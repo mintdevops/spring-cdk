@@ -14,13 +14,17 @@ import software.amazon.awscdk.core.Construct;
 @Getter
 public class Root {
 
-    Construct rootScope;
+    App rootScope;
 
     @PostConstruct
     public void provision() {
         log.debug("App:synth");
 
         rootScope = new App();
+    }
+
+    public void synth() {
+        rootScope.synth();
     }
 
 }

@@ -22,13 +22,10 @@ public class VpcFactory {
     private final static String RESOURCE_NAME = "Vpc";
 
     public Vpc create(Construct parent, VpcConfig conf, Environment stage) {
-        // Just return an empty construct for now the implementation details arent important here
-
         log.debug("VpcFactory:create");
         log.debug(stage);
         log.debug(conf);
 
-        // TODO: you'd use the builder objects CDK generates here
         return Vpc.Builder
                 .create(parent, RESOURCE_NAME)
                 .cidr(conf.getCidr())

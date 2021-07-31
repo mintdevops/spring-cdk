@@ -8,13 +8,11 @@ import lombok.Data;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = "app")
+@ConfigurationProperties(prefix = "app.pipeline")
 @Validated
-public class AppConfig {
+public class PipelineConfig {
 
-    PipelineConfig pipeline = new PipelineConfig();
-    VpcConfig vpc = new VpcConfig();
-
-    // Getters and Setters (Omitted for brevity)
+    private String name = "MyAwesomeCDKPipeline";
+    private GithubConfig github = new GithubConfig();
 
 }

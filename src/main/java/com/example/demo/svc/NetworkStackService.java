@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import com.example.demo.app.Root;
 import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
+import com.example.demo.config.IStack;
 import com.example.demo.repository.VpcFactory;
 
 import lombok.extern.log4j.Log4j2;
@@ -17,10 +18,7 @@ import software.amazon.awscdk.services.ec2.Vpc;
 
 @Component
 @Log4j2
-public class NetworkStackService {
-
-    // Main components autowired
-    // No heavy constructors
+public class NetworkStackService implements IStack {
 
     @Autowired
     Root root;
@@ -31,15 +29,19 @@ public class NetworkStackService {
     @Autowired
     VpcFactory vpcFactory;
 
+    // We dont really know where the resources in this service would end up in the construct tree
+    Construct scope;
     Stack stack;
 
-    @PostConstruct
+    public void setScope(Construct scope) {
+        this.scope = scope;
+    }
+
     public void provision() {
         log.debug("NetworkStackService:provision");
         log.debug(config);
 
-        // We need a stack in the stack service to attach resources to
-        stack = Stack.Builder.create(root.getRootScope()).build();
+        stack = Stack.Builder.create(scope == null ? root.getRootScope() : scope).build();
 
         Vpc vpc = addPublicPrivateIsolatedVpc();
     }

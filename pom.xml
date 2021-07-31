@@ -89,7 +89,23 @@
 			<artifactId>ec2</artifactId>
 			<version>1.115.0</version>
 		</dependency>
+		<dependency>
+			<groupId>software.amazon.awscdk</groupId>
+			<artifactId>codepipeline</artifactId>
+			<version>1.115.0</version>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.awscdk</groupId>
+			<artifactId>codepipeline-actions</artifactId>
+			<version>1.115.0</version>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.awscdk</groupId>
+			<artifactId>cdk-pipelines</artifactId>
+			<version>1.115.0</version>
+		</dependency>
 	</dependencies>
+	
 
 	<build>
 		<plugins>

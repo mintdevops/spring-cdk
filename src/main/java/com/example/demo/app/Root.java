@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.demo.config.AppConfig;
 import com.example.demo.config.TagManager;
+import com.example.demo.svc.TaggingService;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -25,28 +26,31 @@ import software.amazon.awscdk.core.Tags;
 public class Root {
 
     private final AppConfig config;
+    private final TaggingService taggingService;
     private final App rootScope = new App();
     private Map<String, String> tags = new HashMap<>();
 
     public void synth() {
         log.debug("App:synth");
 
-        for (Map.Entry<String, String> entry : tags.entrySet()) {
-            Tags.of(rootScope).add(entry.getKey(), entry.getValue());
-        }
+        // for (Map.Entry<String, String> entry : tags.entrySet()) {
+        //     Tags.of(rootScope).add(entry.getKey(), entry.getValue());
+        // }
+
+        taggingService.addApplicationTags(rootScope);
 
         rootScope.synth();
     }
 
-    @PostConstruct
-    private void addTags() {
-        log.debug("addTags");
+    // @PostConstruct
+    // private void addTags() {
+    //     log.debug("addTags");
 
-        tags = TagManager.fullyQualifiedTags(config.getTagNamespace(), "app",
-                config.getTags());
+    //     tags = TagManager.fullyQualifiedTags(config.getTagNamespace(), "app",
+    //             config.getTags());
 
 
 
-    }
+    // }
 
 }

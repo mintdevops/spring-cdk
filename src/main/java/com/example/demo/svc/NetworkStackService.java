@@ -32,13 +32,13 @@ public class NetworkStackService implements IStack {
     private final Root root;
     private final AppConfig config;
     private final VpcFactory vpcFactory;
+    private final TaggingService taggingService;
 
     private Construct scope;
     private Stack stack;
     private Environment env = Environment.DEV;
     private String namespace = "Default";
     private Map<String, String> tags = new HashMap<>();
-
 
     public void provision() {
         log.debug("provision");
@@ -47,19 +47,17 @@ public class NetworkStackService implements IStack {
 
         Vpc vpc = addPublicPrivateIsolatedVpc();
 
-        for (Map.Entry<String, String> entry : tags.entrySet()) {
-            Tags.of(stack).add(entry.getKey(), entry.getValue());
-        }
+        taggingService.addStackTags(stack);
     }
 
-    @PostConstruct
-    private void addTags() {
-        Map<String, String> merged = config.getEnv().get(env).getTags();
-        merged.put("Environment", env.toString());
+    // @PostConstruct
+    // private void addTags() {
+    //     Map<String, String> merged = config.getEnv().get(env).getTags();
+    //     merged.put("Environment", env.toString());
 
-        tags = TagManager.fullyQualifiedTags(config.getTagNamespace(), "image",
-                merged);
-    }
+    //     tags = TagManager.fullyQualifiedTags(config.getTagNamespace(), "image",
+    //             merged);
+    // }
 
     private Vpc addPublicPrivateIsolatedVpc() {
         log.debug("addPublicPrivateIsolatedVpc");

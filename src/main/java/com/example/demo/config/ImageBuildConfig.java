@@ -33,6 +33,7 @@ public class ImageBuildConfig implements IStackConfig {
     /**
      * The Regions.
      */
-    List<String> regions = new ArrayList<>();;
+    List<String> regions = new ArrayList<>();
+
 
 }

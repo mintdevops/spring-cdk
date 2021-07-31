@@ -32,6 +32,7 @@ public class ImageStackService implements IStack {
     private final Root root;
     private final AppConfig config;
     private final ImageBuilderFactory imageBuilderFactory;
+    private final TaggingService taggingService;
 
     private Construct scope;
     private Stack stack;
@@ -46,19 +47,21 @@ public class ImageStackService implements IStack {
 
         IImageBuilder builder = addImageBuilder();
 
-        for (Map.Entry<String, String> entry : tags.entrySet()) {
-            Tags.of(stack).add(entry.getKey(), entry.getValue());
-        }
+        // for (Map.Entry<String, String> entry : tags.entrySet()) {
+        //     Tags.of(stack).add(entry.getKey(), entry.getValue());
+        // }
+
+        taggingService.addStackTags(stack);
     }
 
-    @PostConstruct
-    private void addTags() {
-        Map<String, String> merged = config.getEnv().get(env).getTags();
-        merged.put("Environment", env.toString())   ;
+    // @PostConstruct
+    // private void addTags() {
+    //     Map<String, String> merged = config.getEnv().get(env).getTags();
+    //     merged.put("Environment", env.toString())   ;
 
-        tags = TagManager.fullyQualifiedTags(config.getTagNamespace(), "image",
-                merged);
-    }
+    //     tags = TagManager.fullyQualifiedTags(config.getTagNamespace(), "image",
+    //             merged);
+    // }
 
     private IImageBuilder addImageBuilder() {
         log.debug("addImageBuilder");

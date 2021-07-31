@@ -41,6 +41,7 @@ public class PipelineStackService implements IStack {
     private final AppConfig config;
     private final PipelineFactory pipelineFactory;
     private final StageFactory stageFactory;
+    private final TaggingService taggingService;
 
     private Construct scope;
     private Stack stack;
@@ -71,19 +72,21 @@ public class PipelineStackService implements IStack {
         for (Map.Entry<String, String> entry : tags.entrySet()) {
             Tags.of(stack).add(entry.getKey(), entry.getValue());
         }
+
+        taggingService.addStackTags(stack);
     }
 
-    @PostConstruct
-    private void addTags() {
-        log.debug("addTags");
+    // @PostConstruct
+    // private void addTags() {
+    //     log.debug("addTags");
 
-        Map<String, String> merged = config.getPipeline().getTags();
-        merged.put("Environment", env.toString())   ;
+    //     Map<String, String> merged = config.getPipeline().getTags();
+    //     merged.put("Environment", env.toString())   ;
 
-        tags = TagManager.fullyQualifiedTags(config.getTagNamespace(), "image",
-                merged);
+    //     tags = TagManager.fullyQualifiedTags(config.getTagNamespace(), "image",
+    //             merged);
 
-    }
+    // }
 
     private CodePipeline addPipeline() {
         log.debug("addPipeline");

@@ -18,5 +18,6 @@ public class EnvConfig {
 
     VpcConfig vpc = new VpcConfig();
     ImageBuildConfig image = new ImageBuildConfig();
+    Map<String, String> tags = new HashMap<>();
 
 }

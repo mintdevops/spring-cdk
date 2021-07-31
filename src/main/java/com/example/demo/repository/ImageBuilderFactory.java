@@ -13,18 +13,17 @@ import com.example.demo.construct.imagebuilder.IImageBuilder;
 import com.example.demo.construct.imagebuilder.ImageBuilderConfig;
 import com.example.demo.svc.LookupService;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.Construct;
 
 @Component
 @Log4j2
+@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class ImageBuilderFactory {
 
-    @Autowired
-    AppConfig conf;
-
-    @Autowired
-    LookupService lookupService;
+    private final AppConfig conf;
+    private final LookupService lookupService;
 
     private final static String RESOURCE_NAME = "ImageBuilder";
 
@@ -49,6 +48,7 @@ public class ImageBuilderFactory {
                                   .accounts(imageConf.getAccounts())
                                   .regions(imageConf.getRegions())
                                   .build());
+
     }
 
     // standard setters and getters

@@ -2,12 +2,16 @@ package com.example.demo.repository;
 
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.Label;
 import com.example.demo.config.PipelineConfig;
+import com.example.demo.svc.LookupService;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.SecretValue;
@@ -18,27 +22,30 @@ import software.amazon.awscdk.pipelines.GitHubSourceOptions;
 
 @Component
 @Log4j2
+@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class PipelineFactory {
 
     private final static String RESOURCE_NAME = "Pipeline";
 
-    public CodePipeline create(Construct parent, PipelineConfig conf, Environment stage) {
+    private final AppConfig conf;
+    private final LookupService lookupService;
+
+    public CodePipeline create(Construct parent, Environment stage) {
         log.debug("create");
 
         // Options configurable ofc, with sensible defaults
 
-        // Based on some configuration we need to produce the build step
         CodeBuildStep synth = CodeBuildStep.Builder
                 .create("Synth")
-                .input(CodePipelineSource.gitHub(String.format("%s/%s", conf
+                .input(CodePipelineSource.gitHub(String.format("%s/%s", conf.getPipeline()
                         .getGithub()
-                        .getOwner(), conf
+                        .getOwner(), conf.getPipeline()
                         .getGithub()
-                        .getRepo()), conf
+                        .getRepo()), conf.getPipeline()
                         .getGithub()
                         .getBranch(), GitHubSourceOptions
                         .builder()
-                        .authentication(SecretValue.secretsManager(conf
+                        .authentication(SecretValue.secretsManager(conf.getPipeline()
 
                                 .getGithub()
                                 .getToken()))

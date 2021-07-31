@@ -9,7 +9,9 @@ import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.Label;
 import com.example.demo.config.VpcConfig;
+import com.example.demo.svc.LookupService;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.SubnetConfiguration;
@@ -18,10 +20,11 @@ import software.amazon.awscdk.services.ec2.Vpc;
 
 @Component
 @Log4j2
+@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class VpcFactory {
 
-    @Autowired
-    AppConfig conf;
+    private final AppConfig conf;
+    private final LookupService lookupService;
 
     private final static String RESOURCE_NAME = "Vpc";
 

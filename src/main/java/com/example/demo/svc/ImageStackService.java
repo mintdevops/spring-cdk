@@ -3,6 +3,7 @@ package com.example.demo.svc;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,20 +21,16 @@ import software.amazon.awscdk.core.Stack;
 
 @Component
 @Log4j2
+@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class ImageStackService implements IStack {
 
-    @Autowired
-    Root root;
-
-    @Autowired
-    AppConfig config;
-
-    @Autowired
-    ImageBuilderFactory imageBuilderFactory;
+    private final Root root;
+    private final AppConfig config;
+    private final ImageBuilderFactory imageBuilderFactory;
 
     // We dont really know where the resources in this service would end up in the construct tree
-    Construct scope;
-    Stack stack;
+    private Construct scope;
+    private Stack stack;
 
     public void setScope(Construct scope) {
         this.scope = scope;

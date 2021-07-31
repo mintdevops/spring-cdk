@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,30 +27,20 @@ import software.amazon.awscdk.pipelines.StageDeployment;
 
 @Component
 @Log4j2
+@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class PipelineStackService implements IStack {
 
-    @Autowired
-    Root root;
-
-    @Autowired
-    AppConfig config;
-
-    @Autowired
-    PipelineFactory pipelineFactory;
-
-    @Autowired
-    StageFactory stageFactory;
-
-    @Autowired
-    NetworkStackService networkStackService;
-
-    @Autowired
-    ImageStackService imageStackService;
+    private final Root root;
+    private final AppConfig config;
+    private final PipelineFactory pipelineFactory;
+    private final StageFactory stageFactory;
+    private final NetworkStackService networkStackService;
+    private final ImageStackService imageStackService;
 
     private final Map<String, IStack> serviceMap = new HashMap<>();
 
-    Construct scope;
-    Stack stack;
+    private Construct scope;
+    private Stack stack;
 
     @Override
     public void setScope(Construct scope) {

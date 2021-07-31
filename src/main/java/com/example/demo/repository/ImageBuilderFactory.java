@@ -1,12 +1,16 @@
 package com.example.demo.repository;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.ImageBuildConfig;
+import com.example.demo.config.VpcConfig;
 import com.example.demo.construct.imagebuilder.AnsibleImageBuilder;
 import com.example.demo.construct.imagebuilder.IImageBuilder;
 import com.example.demo.construct.imagebuilder.ImageBuilderConfig;
+import com.example.demo.svc.LookupService;
 
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.Construct;
@@ -15,23 +19,31 @@ import software.amazon.awscdk.core.Construct;
 @Log4j2
 public class ImageBuilderFactory {
 
+    @Autowired
+    AppConfig conf;
+
+    @Autowired
+    LookupService lookupService;
+
     private final static String RESOURCE_NAME = "ImageBuilder";
 
-    public IImageBuilder create(Construct parent, ImageBuilderConfig conf, Environment stage) {
+    public IImageBuilder create(Construct parent, Environment stage) {
         log.debug("ImageBuilder:create");
         log.debug(stage);
         log.debug(conf);
+
+        ImageBuildConfig imageConf = conf.getEnv().get(stage).getImage();
 
         // Options configurable ofc, with sensible defaults
 
         return new AnsibleImageBuilder(parent, RESOURCE_NAME,
                 ImageBuilderConfig.builder()
-                                  .vpcId(conf.getVpcId())
-                                  .availabilityZones(conf.getAvailabilityZones())
-                                  .subnetId(conf.getSubnetId())
-                                  .imageName(conf.getImageName())
-                                  .accounts(conf.getAccounts())
-                                  .regions(conf.getRegions())
+                                  .vpcId(lookupService.getVpcId())
+                                  .availabilityZones(lookupService.getAvailabilityZones())
+                                  .subnetId(lookupService.pickSubnet())
+                                  .imageName(imageConf.getImageName())
+                                  .accounts(imageConf.getAccounts())
+                                  .regions(imageConf.getRegions())
                                   .build());
     }
 

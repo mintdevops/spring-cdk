@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -15,7 +16,7 @@ import lombok.Data;
 @Component
 @ConfigurationProperties(prefix = "app.image")
 @Validated
-public class ImageBuildConfig {
+public class ImageBuildConfig implements IStackConfig {
 
     /**
      * The Vpc stack name.
@@ -28,10 +29,10 @@ public class ImageBuildConfig {
     /**
      * The Accounts.
      */
-    List<String> accounts;
+    List<String> accounts = new ArrayList<>();
     /**
      * The Regions.
      */
-    List<String> regions;
+    List<String> regions = new ArrayList<>();;
 
 }

@@ -10,6 +10,7 @@ import com.example.demo.config.Environment;
 import com.example.demo.config.VpcConfig;
 
 import lombok.extern.log4j.Log4j2;
+import software.amazon.awscdk.core.App;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.SubnetConfiguration;
 import software.amazon.awscdk.services.ec2.SubnetType;
@@ -19,16 +20,21 @@ import software.amazon.awscdk.services.ec2.Vpc;
 @Log4j2
 public class VpcFactory {
 
+    @Autowired
+    AppConfig conf;
+
     private final static String RESOURCE_NAME = "Vpc";
 
-    public Vpc create(Construct parent, VpcConfig conf, Environment stage) {
+    public Vpc create(Construct parent, Environment stage) {
         log.debug("VpcFactory:create");
         log.debug(stage);
         log.debug(conf);
 
+        VpcConfig vpcConf = conf.getEnv().get(stage).getVpc();
+
         return Vpc.Builder
                 .create(parent, RESOURCE_NAME)
-                .cidr(conf.getCidr())
+                .cidr(vpcConf.getCidr())
                 .maxAzs(Environment.PROD == stage ? 2 : 1)
                 .natGateways(Environment.PROD == stage ? 2 : 1)
                 //.natGatewayProvider(nat)

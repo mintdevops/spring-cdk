@@ -34,6 +34,7 @@ public class StageFactory {
             log.debug("Adding stack to stage {}", stg.getStageName());
 
             stack.setScope(stg);
+            stack.setEnvironment(stage);
             stack.provision();
         }
 

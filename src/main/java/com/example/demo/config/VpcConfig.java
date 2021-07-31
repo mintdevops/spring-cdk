@@ -10,7 +10,7 @@ import lombok.Data;
 @Component
 @ConfigurationProperties(prefix = "app.vpc")
 @Validated
-public class VpcConfig {
+public class VpcConfig implements IStackConfig {
 
     private String cidr = "172.0.0.1/16";
 

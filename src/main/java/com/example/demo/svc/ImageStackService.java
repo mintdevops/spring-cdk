@@ -31,9 +31,9 @@ public class ImageStackService implements IStack {
     @Autowired
     ImageBuilderFactory imageBuilderFactory;
 
-    // We dont really know where the resources in this service would end up in the construct tree
     Construct scope;
     Stack stack;
+    Environment env = Environment.DEV;
 
     public void setScope(Construct scope) {
         this.scope = scope;
@@ -52,15 +52,12 @@ public class ImageStackService implements IStack {
         // Perform any resource specific business logic here e.g. add nat gateway alarm
 
         // Example of a custom resource (which is still a construct but its our own)
-        return imageBuilderFactory.create(stack, ImageBuilderConfig
-                .builder()
-                .availabilityZones(Collections.singletonList("eu-west-1a"))
-                .vpcId("vpc-12345")
-                .subnetId("subnet-12345")
-                .imageName(config.getImage().getImageName())
-                .accounts(new ArrayList<>())
-                .regions(new ArrayList<>())
-                .build(), Environment.DEV);
+        return imageBuilderFactory.create(stack, Environment.DEV);
+    }
+
+    @Override
+    public void setEnvironment(Environment env) {
+        this.env = env;
     }
 
 }

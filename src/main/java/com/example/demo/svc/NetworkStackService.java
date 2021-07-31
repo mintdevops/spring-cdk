@@ -29,9 +29,10 @@ public class NetworkStackService implements IStack {
     @Autowired
     VpcFactory vpcFactory;
 
-    // We dont really know where the resources in this service would end up in the construct tree
     Construct scope;
     Stack stack;
+    Environment env = Environment.DEV;
+
 
     public void setScope(Construct scope) {
         this.scope = scope;
@@ -49,7 +50,12 @@ public class NetworkStackService implements IStack {
     private Vpc addPublicPrivateIsolatedVpc() {
         // Perform any resource specific business logic here e.g. add nat gateway alarm
 
-        return vpcFactory.create(stack, config.getVpc(), Environment.DEV);
+        return vpcFactory.create(stack, env);
+    }
+
+    @Override
+    public void setEnvironment(Environment env) {
+        this.env = env;
     }
 
 }

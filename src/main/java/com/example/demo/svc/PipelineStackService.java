@@ -50,6 +50,7 @@ public class PipelineStackService implements IStack {
 
     Construct scope;
     Stack stack;
+    Environment env = Environment.DEV;
 
     @Override
     public void setScope(Construct scope) {
@@ -79,6 +80,9 @@ public class PipelineStackService implements IStack {
     private StageDeployment addDeployStage(CodePipeline pipeline, Environment env) {
         StageConfig conf = new StageConfig();
 
+        log.debug("addDeployStage");
+        log.debug(config.getEnv());
+
         conf.getStacks().add(serviceMap.get(config.getPipeline().getStack().toString()));
 
         Stage stage = stageFactory.create(pipeline, conf, env);
@@ -86,4 +90,8 @@ public class PipelineStackService implements IStack {
         return pipeline.addStage(stage);
     }
 
+    @Override
+    public void setEnvironment(Environment env) {
+        this.env = env;
+    }
 }

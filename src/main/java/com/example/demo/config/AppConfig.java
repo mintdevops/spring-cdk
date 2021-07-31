@@ -14,6 +14,7 @@ public class AppConfig {
 
     PipelineConfig pipeline = new PipelineConfig();
     VpcConfig vpc = new VpcConfig();
+    ImageBuildConfig image = new ImageBuildConfig();
 
     // Getters and Setters (Omitted for brevity)
 

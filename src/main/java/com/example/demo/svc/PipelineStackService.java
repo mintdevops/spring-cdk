@@ -43,6 +43,9 @@ public class PipelineStackService implements IStack {
     @Autowired
     NetworkStackService networkStackService;
 
+    @Autowired
+    ImageStackService imageStackService;
+
     private final Map<String, IStack> serviceMap = new HashMap<>();
 
     Construct scope;
@@ -59,6 +62,7 @@ public class PipelineStackService implements IStack {
         log.debug(config);
 
         serviceMap.put(StackType.NETWORK.toString(), networkStackService);
+        serviceMap.put(StackType.IMAGE.toString(), imageStackService);
 
         stack = Stack.Builder.create(root.getRootScope()).build();
 

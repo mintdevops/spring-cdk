@@ -14,5 +14,6 @@ public class PipelineConfig {
 
     private String name = "MyAwesomeCDKPipeline";
     private GithubConfig github = new GithubConfig();
+    private StackType stack;
 
 }

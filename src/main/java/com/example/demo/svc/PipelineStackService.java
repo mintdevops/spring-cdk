@@ -1,6 +1,7 @@
 package com.example.demo.svc;
 
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -11,23 +12,17 @@ import com.example.demo.app.Root;
 import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.IStack;
+import com.example.demo.config.StackType;
 import com.example.demo.config.StageConfig;
 import com.example.demo.repository.PipelineFactory;
 import com.example.demo.repository.StageFactory;
-import com.example.demo.repository.VpcFactory;
 
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.Construct;
-import software.amazon.awscdk.core.SecretValue;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.core.Stage;
-import software.amazon.awscdk.pipelines.CodeBuildStep;
 import software.amazon.awscdk.pipelines.CodePipeline;
-import software.amazon.awscdk.pipelines.CodePipelineSource;
-import software.amazon.awscdk.pipelines.GitHubSourceOptions;
 import software.amazon.awscdk.pipelines.StageDeployment;
-import software.amazon.awscdk.services.codebuild.BuildSpec;
-import software.amazon.awscdk.services.ec2.Vpc;
 
 @Component
 @Log4j2
@@ -48,6 +43,8 @@ public class PipelineStackService implements IStack {
     @Autowired
     NetworkStackService networkStackService;
 
+    private final Map<String, IStack> serviceMap = new HashMap<>();
+
     Construct scope;
     Stack stack;
 
@@ -61,9 +58,12 @@ public class PipelineStackService implements IStack {
         log.debug("PipelineStackService:provision");
         log.debug(config);
 
+        serviceMap.put(StackType.NETWORK.toString(), networkStackService);
+
         stack = Stack.Builder.create(root.getRootScope()).build();
 
         CodePipeline pipeline = addPipeline();
+
         StageDeployment dev = addDeployStage(pipeline, Environment.DEV);
     }
 
@@ -75,8 +75,7 @@ public class PipelineStackService implements IStack {
     private StageDeployment addDeployStage(CodePipeline pipeline, Environment env) {
         StageConfig conf = new StageConfig();
 
-        // TODO: How to make this generic without having a pipeline service for every stack it _can_ deploy
-        conf.getStacks().add(networkStackService);
+        conf.getStacks().add(serviceMap.get(config.getPipeline().getStack().toString()));
 
         Stage stage = stageFactory.create(pipeline, conf, env);
 

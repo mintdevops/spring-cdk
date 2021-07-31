@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,26 +29,19 @@ import software.amazon.awscdk.pipelines.StageDeployment;
 
 @Component
 @Log4j2
+@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 @Setter
 public class PipelineStackService implements IStack {
 
+    private final Root root;
+    private final AppConfig config;
+    private final PipelineFactory pipelineFactory;
+    private final StageFactory stageFactory;
 
-    @Autowired
-    Root root;
-
-    @Autowired
-    AppConfig config;
-
-    @Autowired
-    PipelineFactory pipelineFactory;
-
-    @Autowired
-    StageFactory stageFactory;
-
-    Construct scope;
-    Stack stack;
-    Environment env = Environment.PROD;
-    String namespace;
+    private Construct scope;
+    private Stack stack;
+    private Environment env = Environment.DEV;
+    private String namespace;
 
     @Override
     public void setScope(Construct scope) {
@@ -58,12 +52,7 @@ public class PipelineStackService implements IStack {
     public void provision() {
         log.debug("provision");
 
-        stack = Stack.Builder.create(root.getRootScope(), Label.builder()
-                                                               .namespace(config.getName())
-                                                               .stage("")
-                                                               .resource("")
-                                                               .build()
-                                                               .toString())
+        stack = Stack.Builder.create(root.getRootScope(), config.getName())
                              .build();
 
         CodePipeline pipeline = addPipeline();

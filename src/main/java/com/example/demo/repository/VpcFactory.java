@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 
 import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
+import com.example.demo.config.Label;
 import com.example.demo.config.VpcConfig;
 
 import lombok.extern.log4j.Log4j2;
-import software.amazon.awscdk.core.App;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.SubnetConfiguration;
 import software.amazon.awscdk.services.ec2.SubnetType;
@@ -26,14 +26,17 @@ public class VpcFactory {
     private final static String RESOURCE_NAME = "Vpc";
 
     public Vpc create(Construct parent, Environment stage) {
-        log.debug("VpcFactory:create");
-        log.debug(stage);
-        log.debug(conf);
+        log.debug("create");
 
         VpcConfig vpcConf = conf.getEnv().get(stage).getVpc();
 
         return Vpc.Builder
-                .create(parent, RESOURCE_NAME)
+                .create(parent, Label.builder()
+                                     .namespace("")
+                                     .stage("")
+                                     .resource(RESOURCE_NAME)
+                                     .build()
+                                     .toString())
                 .cidr(vpcConf.getCidr())
                 .maxAzs(Environment.PROD == stage ? 2 : 1)
                 .natGateways(Environment.PROD == stage ? 2 : 1)

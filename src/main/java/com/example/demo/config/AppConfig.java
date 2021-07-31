@@ -18,6 +18,7 @@ import lombok.Data;
 @Validated
 public class AppConfig {
 
+    String name;
     PipelineConfig pipeline = new PipelineConfig();
     Map<Environment, EnvConfig> env = new HashMap<>();
 }

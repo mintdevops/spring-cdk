@@ -12,11 +12,13 @@ import com.example.demo.app.Root;
 import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.IStack;
+import com.example.demo.config.Label;
 import com.example.demo.config.StackType;
 import com.example.demo.config.StageConfig;
 import com.example.demo.repository.PipelineFactory;
 import com.example.demo.repository.StageFactory;
 
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
@@ -26,7 +28,9 @@ import software.amazon.awscdk.pipelines.StageDeployment;
 
 @Component
 @Log4j2
+@Setter
 public class PipelineStackService implements IStack {
+
 
     @Autowired
     Root root;
@@ -40,17 +44,10 @@ public class PipelineStackService implements IStack {
     @Autowired
     StageFactory stageFactory;
 
-    @Autowired
-    NetworkStackService networkStackService;
-
-    @Autowired
-    ImageStackService imageStackService;
-
-    private final Map<String, IStack> serviceMap = new HashMap<>();
-
     Construct scope;
     Stack stack;
-    Environment env = Environment.DEV;
+    Environment env = Environment.PROD;
+    String namespace;
 
     @Override
     public void setScope(Construct scope) {
@@ -59,39 +56,35 @@ public class PipelineStackService implements IStack {
 
     @PostConstruct
     public void provision() {
-        log.debug("PipelineStackService:provision");
-        log.debug(config);
+        log.debug("provision");
 
-        serviceMap.put(StackType.NETWORK.toString(), networkStackService);
-        serviceMap.put(StackType.IMAGE.toString(), imageStackService);
-
-        stack = Stack.Builder.create(root.getRootScope()).build();
+        stack = Stack.Builder.create(root.getRootScope(), Label.builder()
+                                                               .namespace(config.getName())
+                                                               .stage("")
+                                                               .resource("")
+                                                               .build()
+                                                               .toString())
+                             .build();
 
         CodePipeline pipeline = addPipeline();
 
-        StageDeployment dev = addDeployStage(pipeline, Environment.DEV);
+        for (Environment env :config.getPipeline().getEnvironments()) {
+            StageDeployment envStage = addDeployStage(pipeline, env);
+        }
     }
 
     private CodePipeline addPipeline() {
-        // Create the basic pipeline structure
-        return pipelineFactory.create(stack, config.getPipeline(), Environment.PROD);
+        log.debug("addPipeline");
+
+        return pipelineFactory.create(stack, config.getPipeline(), env);
     }
 
     private StageDeployment addDeployStage(CodePipeline pipeline, Environment env) {
-        StageConfig conf = new StageConfig();
-
         log.debug("addDeployStage");
-        log.debug(config.getEnv());
 
-        conf.getStacks().add(serviceMap.get(config.getPipeline().getStack().toString()));
-
-        Stage stage = stageFactory.create(pipeline, conf, env);
+        Stage stage = stageFactory.create(pipeline, env);
 
         return pipeline.addStage(stage);
     }
 
-    @Override
-    public void setEnvironment(Environment env) {
-        this.env = env;
-    }
 }

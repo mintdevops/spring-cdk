@@ -5,8 +5,8 @@ import java.util.Arrays;
 import org.springframework.stereotype.Component;
 
 import com.example.demo.config.Environment;
+import com.example.demo.config.Label;
 import com.example.demo.config.PipelineConfig;
-import com.example.demo.config.VpcConfig;
 
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.Construct;
@@ -15,10 +15,6 @@ import software.amazon.awscdk.pipelines.CodeBuildStep;
 import software.amazon.awscdk.pipelines.CodePipeline;
 import software.amazon.awscdk.pipelines.CodePipelineSource;
 import software.amazon.awscdk.pipelines.GitHubSourceOptions;
-import software.amazon.awscdk.pipelines.Step;
-import software.amazon.awscdk.services.ec2.SubnetConfiguration;
-import software.amazon.awscdk.services.ec2.SubnetType;
-import software.amazon.awscdk.services.ec2.Vpc;
 
 @Component
 @Log4j2
@@ -27,9 +23,7 @@ public class PipelineFactory {
     private final static String RESOURCE_NAME = "Pipeline";
 
     public CodePipeline create(Construct parent, PipelineConfig conf, Environment stage) {
-        log.debug("PipelineFactory:create");
-        log.debug(stage);
-        log.debug(conf);
+        log.debug("create");
 
         // Options configurable ofc, with sensible defaults
 
@@ -62,7 +56,12 @@ public class PipelineFactory {
                 .build();
 
         return CodePipeline.Builder
-                .create(parent, RESOURCE_NAME)
+                .create(parent, Label.builder()
+                                     .namespace("")
+                                     .stage("")
+                                     .resource(RESOURCE_NAME)
+                                     .build()
+                                     .toString())
                 .pipelineName(conf.getName())
                 .crossAccountKeys(true)
                 .selfMutation(true)

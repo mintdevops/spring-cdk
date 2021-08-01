@@ -1,9 +1,7 @@
-package com.example.demo.svc;
+package com.example.demo.stack;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -12,16 +10,16 @@ import com.example.demo.app.Root;
 import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.IStack;
-import com.example.demo.config.TagManager;
+import com.example.demo.config.StackType;
 import com.example.demo.construct.imagebuilder.IImageBuilder;
-import com.example.demo.repository.ImageBuilderFactory;
+import com.example.demo.resource.ImageBuilderFactory;
+import com.example.demo.resource.StackFactory;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
-import software.amazon.awscdk.core.Tags;
 
 @Component
 @Log4j2
@@ -29,10 +27,14 @@ import software.amazon.awscdk.core.Tags;
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class ImageStackService implements IStack {
 
+    private static final StackType QUALIFIER = StackType.IMAGE;
+
     private final Root root;
     private final AppConfig config;
+    private final StackFactory stackFactory;
     private final ImageBuilderFactory imageBuilderFactory;
     private final TaggingService taggingService;
+    private final LookupService lookupService;
 
     private Construct scope;
     private Stack stack;
@@ -43,25 +45,18 @@ public class ImageStackService implements IStack {
     public void provision() {
         log.debug("provision");
 
-        stack = Stack.Builder.create(scope == null ? root.getRootScope() : scope, namespace).build();
+        stack = stackFactory.create(scope == null ? root.getRootScope() : scope, namespace);
 
         IImageBuilder builder = addImageBuilder();
 
-        // for (Map.Entry<String, String> entry : tags.entrySet()) {
-        //     Tags.of(stack).add(entry.getKey(), entry.getValue());
-        // }
-
-        taggingService.addStackTags(stack);
+        addTags();
     }
 
-    // @PostConstruct
-    // private void addTags() {
-    //     Map<String, String> merged = config.getEnv().get(env).getTags();
-    //     merged.put("Environment", env.toString())   ;
-
-    //     tags = TagManager.fullyQualifiedTags(config.getTagNamespace(), "image",
-    //             merged);
-    // }
+    private void addTags() {
+        tags.put("Environment", env.name());
+        taggingService.addTags(stack, tags, QUALIFIER.name());
+        taggingService.addTags(stack, config.getPipeline().getTags(), QUALIFIER.name());
+    }
 
     private IImageBuilder addImageBuilder() {
         log.debug("addImageBuilder");

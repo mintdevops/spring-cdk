@@ -19,6 +19,7 @@ public class PipelineConfig {
 
     private String name = "MyAwesomeCDKPipeline";
     private GithubConfig github = new GithubConfig();
+    private DeployConfig deploy = new DeployConfig();
     private StackType stack;
     private List<Environment> environments = new ArrayList<>();
     private Map<String, String> tags = new HashMap<>();

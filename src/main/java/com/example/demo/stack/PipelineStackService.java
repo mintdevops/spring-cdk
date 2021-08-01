@@ -1,4 +1,4 @@
-package com.example.demo.svc;
+package com.example.demo.stack;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,19 +14,16 @@ import com.example.demo.app.Root;
 import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.IStack;
-import com.example.demo.config.Label;
 import com.example.demo.config.StackType;
-import com.example.demo.config.StageConfig;
-import com.example.demo.config.TagManager;
-import com.example.demo.repository.PipelineFactory;
-import com.example.demo.repository.StageFactory;
+import com.example.demo.resource.PipelineFactory;
+import com.example.demo.resource.StackFactory;
+import com.example.demo.resource.StageFactory;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.core.Stage;
-import software.amazon.awscdk.core.Tags;
 import software.amazon.awscdk.pipelines.CodePipeline;
 import software.amazon.awscdk.pipelines.StageDeployment;
 
@@ -37,15 +34,18 @@ import software.amazon.awscdk.pipelines.StageDeployment;
 @Setter
 public class PipelineStackService implements IStack {
 
+    private static final StackType QUALIFIER = StackType.PIPELINE;
+
     private final Root root;
     private final AppConfig config;
+    private final StackFactory stackFactory;
     private final PipelineFactory pipelineFactory;
     private final StageFactory stageFactory;
     private final TaggingService taggingService;
 
     private Construct scope;
     private Stack stack;
-    private Environment env = Environment.DEV;
+    private Environment env = Environment.CICD;
     private String namespace;
     private Map<String, String> tags = new HashMap<>();
 
@@ -58,8 +58,8 @@ public class PipelineStackService implements IStack {
     public void provision() {
         log.debug("provision");
 
-        stack = Stack.Builder.create(root.getRootScope(), config.getName())
-                             .build();
+        stack = stackFactory.create(scope == null ? root.getRootScope() : scope, config.getName(),
+                config.getPipeline().getDeploy().getAccount(), config.getPipeline().getDeploy().getRegion());
 
         CodePipeline pipeline = addPipeline();
 
@@ -69,24 +69,14 @@ public class PipelineStackService implements IStack {
 
         pipeline.buildPipeline();
 
-        for (Map.Entry<String, String> entry : tags.entrySet()) {
-            Tags.of(stack).add(entry.getKey(), entry.getValue());
-        }
-
-        taggingService.addStackTags(stack);
+        addTags();
     }
 
-    // @PostConstruct
-    // private void addTags() {
-    //     log.debug("addTags");
-
-    //     Map<String, String> merged = config.getPipeline().getTags();
-    //     merged.put("Environment", env.toString())   ;
-
-    //     tags = TagManager.fullyQualifiedTags(config.getTagNamespace(), "image",
-    //             merged);
-
-    // }
+    private void addTags() {
+        tags.put("Environment", env.name());
+        taggingService.addTags(stack, tags, QUALIFIER.name());
+        taggingService.addTags(stack, config.getPipeline().getTags(), QUALIFIER.name());
+    }
 
     private CodePipeline addPipeline() {
         log.debug("addPipeline");
@@ -98,10 +88,6 @@ public class PipelineStackService implements IStack {
         log.debug("addDeployStage");
 
         Stage stage = stageFactory.create(pipeline, env);
-
-        // Add app and environment tags
-        log.debug(this.getTags());
-        log.debug(root.getTags());
 
         return pipeline.addStage(stage);
     }

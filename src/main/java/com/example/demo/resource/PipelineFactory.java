@@ -1,4 +1,4 @@
-package com.example.demo.repository;
+package com.example.demo.resource;
 
 import java.util.Arrays;
 
@@ -8,8 +8,7 @@ import org.springframework.stereotype.Component;
 import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.Label;
-import com.example.demo.config.PipelineConfig;
-import com.example.demo.svc.LookupService;
+import com.example.demo.stack.LookupService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

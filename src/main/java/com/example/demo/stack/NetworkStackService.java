@@ -1,17 +1,15 @@
-package com.example.demo.svc;
+package com.example.demo.stack;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.annotation.PostConstruct;
 
 import com.example.demo.app.Root;
 import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.IStack;
-import com.example.demo.config.Label;
-import com.example.demo.config.TagManager;
-import com.example.demo.repository.VpcFactory;
+import com.example.demo.config.StackType;
+import com.example.demo.resource.StackFactory;
+import com.example.demo.resource.VpcFactory;
 import lombok.RequiredArgsConstructor;
 
 import lombok.Setter;
@@ -20,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
-import software.amazon.awscdk.core.Tags;
 import software.amazon.awscdk.services.ec2.Vpc;
 
 @Component
@@ -29,8 +26,16 @@ import software.amazon.awscdk.services.ec2.Vpc;
 @Setter
 public class NetworkStackService implements IStack {
 
+    private static final StackType QUALIFIER = StackType.NETWORK;
+    private static final Map<String, String> TAGS;
+
+    static {
+        TAGS = new HashMap<>();
+    }
+
     private final Root root;
     private final AppConfig config;
+    private final StackFactory stackFactory;
     private final VpcFactory vpcFactory;
     private final TaggingService taggingService;
 
@@ -43,21 +48,18 @@ public class NetworkStackService implements IStack {
     public void provision() {
         log.debug("provision");
 
-        stack = Stack.Builder.create(scope == null ? root.getRootScope() : scope, namespace).build();
+        stack = stackFactory.create(scope == null ? root.getRootScope() : scope, namespace);
 
         Vpc vpc = addPublicPrivateIsolatedVpc();
 
-        taggingService.addStackTags(stack);
+        addTags();
     }
 
-    // @PostConstruct
-    // private void addTags() {
-    //     Map<String, String> merged = config.getEnv().get(env).getTags();
-    //     merged.put("Environment", env.toString());
-
-    //     tags = TagManager.fullyQualifiedTags(config.getTagNamespace(), "image",
-    //             merged);
-    // }
+    private void addTags() {
+        tags.put("Environment", env.name());
+        taggingService.addTags(stack, tags, QUALIFIER.name());
+        taggingService.addTags(stack, config.getPipeline().getTags(), QUALIFIER.name());
+    }
 
     private Vpc addPublicPrivateIsolatedVpc() {
         log.debug("addPublicPrivateIsolatedVpc");

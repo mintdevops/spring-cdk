@@ -18,6 +18,7 @@ public class EnvConfig {
 
     VpcConfig vpc = new VpcConfig();
     ImageBuildConfig image = new ImageBuildConfig();
+    DeployConfig deploy = new DeployConfig();
     Map<String, String> tags = new HashMap<>();
 
 }

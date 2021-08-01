@@ -23,10 +23,9 @@ import software.amazon.awscdk.services.ec2.Vpc;
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class VpcFactory {
 
-    private final AppConfig conf;
-    private final LookupService lookupService;
-
     private final static String RESOURCE_NAME = "Vpc";
+
+    private final AppConfig conf;
 
     public Vpc create(Construct parent, Environment stage) {
         log.debug("create");
@@ -67,5 +66,4 @@ public class VpcFactory {
                 .build();
     }
 
-    // standard setters and getters
 }

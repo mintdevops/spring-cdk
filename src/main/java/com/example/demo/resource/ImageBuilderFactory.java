@@ -32,7 +32,6 @@ public class ImageBuilderFactory {
 
         ImageBuildConfig imageConf = conf.getEnv().get(stage).getImage();
 
-        // Options configurable ofc, with sensible defaults
         IVpc vpc = lookupService.lookupVpcAtDeployByStackName(parent, imageConf.getVpcStackName());
 
         return new AnsibleImageBuilder(parent, Label.builder()
@@ -52,5 +51,4 @@ public class ImageBuilderFactory {
 
     }
 
-    // standard setters and getters
 }

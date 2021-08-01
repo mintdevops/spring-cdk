@@ -27,12 +27,9 @@ public class PipelineFactory {
     private final static String RESOURCE_NAME = "Pipeline";
 
     private final AppConfig conf;
-    private final LookupService lookupService;
 
     public CodePipeline create(Construct parent, Environment stage) {
         log.debug("create");
-
-        // Options configurable ofc, with sensible defaults
 
         CodeBuildStep synth = CodeBuildStep.Builder
                 .create("Synth")

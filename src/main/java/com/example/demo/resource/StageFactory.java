@@ -30,7 +30,6 @@ public class StageFactory {
     private final static String RESOURCE_NAME = "Stage";
 
     private final AppConfig conf;
-    private final LookupService lookupService;
     private final NetworkStackService networkStackService;
     private final ImageStackService imageStackService;
 
@@ -74,7 +73,7 @@ public class StageFactory {
 
         IStack stack = stackMap.get(conf.getPipeline().getStack());
 
-        log.debug("Adding stack to stage {}", stg.getStageName());
+        log.debug("Adding stack {} to stage {}", stack.getClass(), stg.getStageName());
 
         stack.setNamespace("Infra"); // Stack resources have the same name otherwise
         stack.setScope(stg);
@@ -84,5 +83,4 @@ public class StageFactory {
         return stg;
     }
 
-    // standard setters and getters
 }

@@ -66,7 +66,9 @@ public class TaggingService {
         Map<String,String> merged = Stream.concat(this.appTags.entrySet().stream(), tags.entrySet().stream()).collect(
                 Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         Map<String,String> mutated = TaggingService.fullyQualifiedTags(namespace, qualifier, merged);
+
         log.debug(mutated);
+
         for (Map.Entry<String, String> entry : mutated.entrySet()) {
             Tags.of(scope).add(entry.getKey(), entry.getValue());
         }

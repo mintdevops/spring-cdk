@@ -13,14 +13,15 @@ import com.example.demo.config.Environment;
 import com.example.demo.config.IStack;
 import com.example.demo.config.Label;
 import com.example.demo.config.StackType;
-import com.example.demo.stack.ImageStackService;
-import com.example.demo.stack.LookupService;
-import com.example.demo.stack.NetworkStackService;
+import com.example.demo.service.ImageStackService;
+import com.example.demo.service.NetworkStackService;
+import com.example.demo.service.TaggingService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stage;
+import software.amazon.awscdk.core.Tag;
 
 @Component
 @Log4j2
@@ -30,6 +31,7 @@ public class StageFactory {
     private final static String RESOURCE_NAME = "Stage";
 
     private final AppConfig conf;
+    private final TaggingService taggingService;
     private final NetworkStackService networkStackService;
     private final ImageStackService imageStackService;
 
@@ -73,12 +75,14 @@ public class StageFactory {
 
         IStack stack = stackMap.get(conf.getPipeline().getStack());
 
-        log.debug("Adding stack {} to stage {}", stack.getClass(), stg.getStageName());
+        log.debug("Adding stack {} to stage {}", stack.getQualifier(), stg.getStageName());
 
-        stack.setNamespace("Infra"); // Stack resources have the same name otherwise
+        stack.setNamespace("Infra");
         stack.setScope(stg);
         stack.setEnv(stage);
         stack.provision();
+
+        taggingService.addEnvironmentTags(stg, stage, stack.getQualifier());
 
         return stg;
     }

@@ -8,5 +8,6 @@ public interface IStack {
     void setEnv(Environment env);
     void setNamespace(String namespace);
     void provision();
+    String getQualifier();
 
 }

@@ -9,7 +9,6 @@ import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.Label;
 import com.example.demo.config.VpcConfig;
-import com.example.demo.stack.LookupService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

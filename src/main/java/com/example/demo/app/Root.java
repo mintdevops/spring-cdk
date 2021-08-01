@@ -19,7 +19,7 @@ import software.amazon.awscdk.core.App;
 public class Root {
 
     private final AppConfig config;
-    private final App rootScope = new App();;
+    private final App rootScope = new App();
 
     @PostConstruct
     public void provision() {

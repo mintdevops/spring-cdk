@@ -1,4 +1,4 @@
-package com.example.demo.stack;
+package com.example.demo.service;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,13 +34,11 @@ public class ImageStackService implements IStack {
     private final StackFactory stackFactory;
     private final ImageBuilderFactory imageBuilderFactory;
     private final TaggingService taggingService;
-    private final LookupService lookupService;
 
     private Construct scope;
     private Stack stack;
     private Environment env = Environment.DEV;
     private String namespace = "Default";
-    private Map<String, String> tags = new HashMap<>();
 
     public void provision() {
         log.debug("provision");
@@ -49,13 +47,7 @@ public class ImageStackService implements IStack {
 
         IImageBuilder builder = addImageBuilder();
 
-        addTags();
-    }
-
-    private void addTags() {
-        tags.put("Environment", env.name());
-        taggingService.addTags(stack, tags, QUALIFIER.name());
-        taggingService.addTags(stack, config.getPipeline().getTags(), QUALIFIER.name());
+        taggingService.addTags(stack, config.getEnv().get(env).getTags(), QUALIFIER.name());
     }
 
     private IImageBuilder addImageBuilder() {
@@ -64,6 +56,10 @@ public class ImageStackService implements IStack {
         // Perform any resource specific business logic here
 
         return imageBuilderFactory.create(stack, env);
+    }
+
+    public String getQualifier() {
+        return ImageStackService.QUALIFIER.name();
     }
 
 }

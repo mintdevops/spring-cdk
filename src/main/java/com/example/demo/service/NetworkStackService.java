@@ -1,4 +1,4 @@
-package com.example.demo.stack;
+package com.example.demo.service;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,11 +27,6 @@ import software.amazon.awscdk.services.ec2.Vpc;
 public class NetworkStackService implements IStack {
 
     private static final StackType QUALIFIER = StackType.NETWORK;
-    private static final Map<String, String> TAGS;
-
-    static {
-        TAGS = new HashMap<>();
-    }
 
     private final Root root;
     private final AppConfig config;
@@ -43,7 +38,6 @@ public class NetworkStackService implements IStack {
     private Stack stack;
     private Environment env = Environment.DEV;
     private String namespace = "Default";
-    private Map<String, String> tags = new HashMap<>();
 
     public void provision() {
         log.debug("provision");
@@ -52,13 +46,7 @@ public class NetworkStackService implements IStack {
 
         Vpc vpc = addPublicPrivateIsolatedVpc();
 
-        addTags();
-    }
-
-    private void addTags() {
-        tags.put("Environment", env.name());
-        taggingService.addTags(stack, tags, QUALIFIER.name());
-        taggingService.addTags(stack, config.getPipeline().getTags(), QUALIFIER.name());
+        taggingService.addTags(stack, config.getEnv().get(env).getTags(), QUALIFIER.name());
     }
 
     private Vpc addPublicPrivateIsolatedVpc() {
@@ -67,6 +55,10 @@ public class NetworkStackService implements IStack {
         // Perform any resource specific business logic here e.g. add nat gateway alarm
 
         return vpcFactory.create(stack, env);
+    }
+
+    public String getQualifier() {
+        return NetworkStackService.QUALIFIER.name();
     }
 
 }

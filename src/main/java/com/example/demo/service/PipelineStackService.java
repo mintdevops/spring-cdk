@@ -1,4 +1,4 @@
-package com.example.demo.stack;
+package com.example.demo.service;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,12 +69,7 @@ public class PipelineStackService implements IStack {
 
         pipeline.buildPipeline();
 
-        addTags();
-    }
-
-    private void addTags() {
-        tags.put("Environment", env.name());
-        taggingService.addTags(stack, tags, QUALIFIER.name());
+        taggingService.addEnvironmentTags(stack, env, QUALIFIER.name());
         taggingService.addTags(stack, config.getPipeline().getTags(), QUALIFIER.name());
     }
 
@@ -90,6 +85,10 @@ public class PipelineStackService implements IStack {
         Stage stage = stageFactory.create(pipeline, env);
 
         return pipeline.addStage(stage);
+    }
+
+    public String getQualifier() {
+        return PipelineStackService.QUALIFIER.name();
     }
 
 }

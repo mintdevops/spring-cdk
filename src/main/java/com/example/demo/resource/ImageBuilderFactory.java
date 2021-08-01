@@ -10,7 +10,7 @@ import com.example.demo.config.Label;
 import com.example.demo.construct.imagebuilder.AnsibleImageBuilder;
 import com.example.demo.construct.imagebuilder.IImageBuilder;
 import com.example.demo.construct.imagebuilder.ImageBuilderConfig;
-import com.example.demo.stack.LookupService;
+import com.example.demo.service.LookupService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

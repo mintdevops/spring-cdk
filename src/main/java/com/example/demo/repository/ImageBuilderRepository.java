@@ -1,40 +1,37 @@
-package com.example.demo.resource;
+package com.example.demo.repository;
+
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.ImageBuildConfig;
 import com.example.demo.config.Label;
 import com.example.demo.construct.imagebuilder.AnsibleImageBuilder;
 import com.example.demo.construct.imagebuilder.IImageBuilder;
 import com.example.demo.construct.imagebuilder.ImageBuilderConfig;
-import com.example.demo.service.LookupService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import software.amazon.awscdk.core.CfnOutput;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.IVpc;
 
 @Component
 @Log4j2
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
-public class ImageBuilderFactory {
+public class ImageBuilderRepository extends AbstractResourceRepository<IImageBuilder, ImageBuildConfig> {
 
-    private final static String RESOURCE_NAME = "ImageBuilder";
+    private final static String RESOURCE_NAME = "Image";
+    private final VpcRepository vpcRepository;
 
-    private final AppConfig conf;
-    private final LookupService lookupService;
+    @Override
+    public IImageBuilder create(Construct scope, String namespace, Environment stage, ImageBuildConfig conf) {
+        IVpc vpc = vpcRepository.lookup(scope, conf.getVpcStackName(), LookupType.DEPLOY);
 
-    public IImageBuilder create(Construct parent, Environment stage) {
-        log.debug("create");
-
-        ImageBuildConfig imageConf = conf.getEnv().get(stage).getImage();
-
-        IVpc vpc = lookupService.lookupVpcAtDeployByStackName(parent, imageConf.getVpcStackName());
-
-        return new AnsibleImageBuilder(parent, Label.builder()
+        // TODO: Use factory
+        return new AnsibleImageBuilder(scope, Label.builder()
                                                     .namespace("")
                                                     .stage("")
                                                     .resource(RESOURCE_NAME)
@@ -44,11 +41,17 @@ public class ImageBuilderFactory {
                                   .vpcId(vpc.getVpcId())
                                   .availabilityZones(vpc.getAvailabilityZones())
                                   .subnetId(vpc.getPrivateSubnets().stream().findFirst().orElseThrow(IllegalArgumentException::new).getSubnetId())
-                                  .imageName(imageConf.getImageName())
-                                  .accounts(imageConf.getAccounts())
-                                  .regions(imageConf.getRegions())
+                                  .imageName(conf.getImageName())
+                                  .accounts(conf.getAccounts())
+                                  .regions(conf.getRegions())
                                   .build());
-
     }
 
+    @Override
+    public IImageBuilder lookup(Construct scope, String stackName, LookupType lookupType) {
+        throw new IllegalStateException();
+    }
+    public List<CfnOutput> export(Construct scope, IImageBuilder resource) {
+        throw new IllegalStateException();
+    }
 }

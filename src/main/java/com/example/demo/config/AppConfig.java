@@ -23,4 +23,9 @@ public class AppConfig {
     PipelineConfig pipeline = new PipelineConfig();
     Map<Environment, EnvConfig> env = new HashMap<>();
     Map<String, String> tags = new HashMap<>();
+
+    public AppConfig() {
+        env.put(Environment.TEST, new EnvConfig());
+        env.put(Environment.PROD, new EnvConfig());
+    }
 }

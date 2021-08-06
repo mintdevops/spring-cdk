@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.example.demo.config.AppConfig;
+import com.example.demo.config.Environment;
+import com.example.demo.service.PipelineStackService;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -20,14 +22,18 @@ public class Root {
 
     private final AppConfig config;
     private final App rootScope = new App();
+    private final PipelineStackService pipelineStackService;
 
     @PostConstruct
-    public void provision() {
+    public void init() {
         log.debug(config.toString());
     }
 
     public void synth() {
         log.debug("synth");
+
+        log.debug(pipelineStackService);
+        pipelineStackService.provision(rootScope, "", Environment.CICD);
 
         rootScope.synth();
     }

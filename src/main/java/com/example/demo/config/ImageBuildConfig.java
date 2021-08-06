@@ -7,6 +7,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
+import com.example.demo.repository.IResourceConfig;
+
 import lombok.Data;
 
 /**
@@ -16,7 +18,7 @@ import lombok.Data;
 @Component
 @ConfigurationProperties(prefix = "app.image")
 @Validated
-public class ImageBuildConfig implements IStackConfig {
+public class ImageBuildConfig implements IResourceConfig {
 
     /**
      * The Vpc stack name.

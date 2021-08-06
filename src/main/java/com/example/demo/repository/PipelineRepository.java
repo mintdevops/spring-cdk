@@ -1,16 +1,19 @@
-package com.example.demo.resource;
+package com.example.demo.repository;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.Label;
+import com.example.demo.config.PipelineConfig;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import software.amazon.awscdk.core.CfnOutput;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.SecretValue;
 import software.amazon.awscdk.pipelines.CodeBuildStep;
@@ -21,26 +24,23 @@ import software.amazon.awscdk.pipelines.GitHubSourceOptions;
 @Component
 @Log4j2
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
-public class PipelineFactory {
+public class PipelineRepository extends AbstractResourceRepository<CodePipeline, PipelineConfig> {
 
     private final static String RESOURCE_NAME = "Pipeline";
 
-    private final AppConfig conf;
-
-    public CodePipeline create(Construct parent, Environment stage) {
-        log.debug("create");
-
+    @Override
+    public CodePipeline create(Construct scope, String namespace, Environment stage, PipelineConfig conf) {
         CodeBuildStep synth = CodeBuildStep.Builder
                 .create("Synth")
-                .input(CodePipelineSource.gitHub(String.format("%s/%s", conf.getPipeline()
+                .input(CodePipelineSource.gitHub(String.format("%s/%s", conf
                         .getGithub()
-                        .getOwner(), conf.getPipeline()
+                        .getOwner(), conf
                         .getGithub()
-                        .getRepo()), conf.getPipeline()
+                        .getRepo()), conf
                         .getGithub()
                         .getBranch(), GitHubSourceOptions
                         .builder()
-                        .authentication(SecretValue.secretsManager(conf.getPipeline()
+                        .authentication(SecretValue.secretsManager(conf
 
                                 .getGithub()
                                 .getToken()))
@@ -58,12 +58,12 @@ public class PipelineFactory {
                 .build();
 
         return CodePipeline.Builder
-                .create(parent, Label.builder()
-                                     .namespace("")
-                                     .stage("")
-                                     .resource(RESOURCE_NAME)
-                                     .build()
-                                     .toString())
+                .create(scope, Label.builder()
+                                    .namespace("")
+                                    .stage("")
+                                    .resource(RESOURCE_NAME)
+                                    .build()
+                                    .toString())
                 .pipelineName(conf.getName())
                 .crossAccountKeys(true)
                 .selfMutation(true)
@@ -72,5 +72,16 @@ public class PipelineFactory {
                 .build();
     }
 
-    // standard setters and getters
+    @Override
+    public CodePipeline lookup(Construct scope, String stackName, LookupType lookupType) {
+        throw new IllegalStateException();
+    }
+
+    public List<CfnOutput> export(Construct scope, CodePipeline resource) {
+        List<CfnOutput> outputs = new ArrayList<>();
+
+        outputs.add(createOutput(scope, "PipelineArn", "The Pipelien ARN", resource.getPipeline().getPipelineArn()));
+
+        return outputs;
+    }
 }

@@ -9,13 +9,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
+import com.example.demo.repository.IResourceConfig;
+
 import lombok.Data;
 
 @Data
 @Component
 @ConfigurationProperties(prefix = "app.pipeline")
 @Validated
-public class PipelineConfig {
+public class PipelineConfig implements IResourceConfig {
 
     private String name = "MyAwesomeCDKPipeline";
     private GithubConfig github = new GithubConfig();

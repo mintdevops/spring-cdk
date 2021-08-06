@@ -1,21 +1,19 @@
 package com.example.demo.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.example.demo.app.Root;
 import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
-import com.example.demo.config.IStack;
 import com.example.demo.config.StackType;
-import com.example.demo.resource.StackFactory;
-import com.example.demo.resource.VpcFactory;
+import com.example.demo.config.VpcConfig;
+import com.example.demo.repository.VpcRepository;
+import com.example.demo.factory.StackFactory;
+
 import lombok.RequiredArgsConstructor;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.ec2.Vpc;
@@ -24,41 +22,43 @@ import software.amazon.awscdk.services.ec2.Vpc;
 @Log4j2
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 @Setter
-public class NetworkStackService implements IStack {
+public class NetworkStackService extends AbstractStackService {
 
-    private static final StackType QUALIFIER = StackType.NETWORK;
+    public static final StackType QUALIFIER = StackType.NETWORK;
 
-    private final Root root;
     private final AppConfig config;
     private final StackFactory stackFactory;
-    private final VpcFactory vpcFactory;
+    //private final VpcFactory vpcFactory;
     private final TaggingService taggingService;
+    private final PipelineStageService outputService;
+    private final VpcRepository vpcRepository;
+    private final PipelineStageService pipelineStageService;
 
     private Construct scope;
     private Stack stack;
     private Environment env = Environment.DEV;
     private String namespace = "Default";
 
-    public void provision() {
+    public Stack provision(Construct scope, String namespace, Environment stage) {
         log.debug("provision");
 
-        stack = stackFactory.create(scope == null ? root.getRootScope() : scope, namespace);
+        Stack stack = stackFactory.create(scope, namespace);
 
-        Vpc vpc = addPublicPrivateIsolatedVpc();
+        addPublicPrivateIsolatedVpc(stack, stage, config.getEnv().get(stage).getVpc());
 
-        taggingService.addTags(stack, config.getEnv().get(env).getTags(), QUALIFIER.name());
+        taggingService.addTags(stack, config.getEnv().get(stage).getTags(), QUALIFIER.name());
+
+        return stack;
     }
 
-    private Vpc addPublicPrivateIsolatedVpc() {
+    private void addPublicPrivateIsolatedVpc(Stack stack, Environment stage, VpcConfig vpcConf) {
         log.debug("addPublicPrivateIsolatedVpc");
 
-        // Perform any resource specific business logic here e.g. add nat gateway alarm
+        // Perform any resource specific business logic here e.g. add nat gateway alarm in prod
 
-        return vpcFactory.create(stack, env);
-    }
+        Vpc vpc = vpcRepository.create(stack, "", stage, vpcConf);
 
-    public String getQualifier() {
-        return NetworkStackService.QUALIFIER.name();
+        vpcRepository.export(stack, vpc).stream().forEach(pipelineStageService::addOutput);
     }
 
 }

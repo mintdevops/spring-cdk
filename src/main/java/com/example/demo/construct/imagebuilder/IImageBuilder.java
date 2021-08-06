@@ -1,4 +1,6 @@
 package com.example.demo.construct.imagebuilder;
 
-public interface IImageBuilder {
+import software.amazon.awscdk.core.IConstruct;
+
+public interface IImageBuilder extends IConstruct {
 }

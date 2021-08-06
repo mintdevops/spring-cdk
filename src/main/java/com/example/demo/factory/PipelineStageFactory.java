@@ -1,4 +1,4 @@
-package com.example.demo.resource;
+package com.example.demo.factory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 
 import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
-import com.example.demo.config.IStack;
 import com.example.demo.config.Label;
 import com.example.demo.config.StackType;
+import com.example.demo.service.IStackService;
 import com.example.demo.service.ImageStackService;
 import com.example.demo.service.NetworkStackService;
 import com.example.demo.service.TaggingService;
@@ -21,12 +21,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stage;
-import software.amazon.awscdk.core.Tag;
 
 @Component
 @Log4j2
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
-public class StageFactory {
+public class PipelineStageFactory {
 
     private final static String RESOURCE_NAME = "Stage";
 
@@ -35,16 +34,24 @@ public class StageFactory {
     private final NetworkStackService networkStackService;
     private final ImageStackService imageStackService;
 
-    private final Map<StackType, IStack> stackMap = new HashMap<>();
+    private final Map<StackType, IStackService> stackMap = new HashMap<>();
 
     @PostConstruct
     public void registerStacks() {
         stackMap.put(StackType.NETWORK, networkStackService);
         stackMap.put(StackType.IMAGE, imageStackService);
+
+        // TODO: Support user provided stacks
     }
 
-    public Stage create(Construct parent, Environment stage) {
+    public Stage create(Construct parent, String namespace, Environment stage) {
         log.debug("create");
+
+        if (conf.getEnv().get(stage) == null) {
+            log.error("Environment {} enabled but not config found", stage.name());
+
+            throw new IllegalStateException();
+        }
 
         String envAccount = conf.getEnv().get(stage).getDeploy().getAccount();
         String envRegion = conf.getEnv().get(stage).getDeploy().getRegion();
@@ -63,7 +70,7 @@ public class StageFactory {
                     "CDK_DEFAULT_ACCOUNT")).region(System.getenv("CDK_DEFAULT_REGION")).build();
         }
 
-        Stage stg = Stage.Builder.create(parent,
+        Stage pipelineStage = Stage.Builder.create(parent,
                 Label.builder()
                      .namespace("")
                      .stage(stage.toString())
@@ -73,18 +80,15 @@ public class StageFactory {
                                  .env(env)
                                  .build();
 
-        IStack stack = stackMap.get(conf.getPipeline().getStack());
+        IStackService stackService = stackMap.get(conf.getPipeline().getStack());
 
-        log.debug("Adding stack {} to stage {}", stack.getQualifier(), stg.getStageName());
+        log.debug("Adding stack {} to stage {}", conf.getPipeline().getStack(), pipelineStage.getStageName());
 
-        stack.setNamespace("Infra");
-        stack.setScope(stg);
-        stack.setEnv(stage);
-        stack.provision();
+        stackService.provision(pipelineStage, namespace, stage);
 
-        taggingService.addEnvironmentTags(stg, stage, stack.getQualifier());
+        taggingService.addEnvironmentTags(pipelineStage, stage, conf.getPipeline().getStack().toString());
 
-        return stg;
+        return pipelineStage;
     }
 
 }

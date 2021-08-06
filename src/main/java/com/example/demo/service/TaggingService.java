@@ -23,8 +23,6 @@ import software.amazon.awscdk.core.Tags;
 @Component
 @Log4j2
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
-@Getter
-@Setter
 public class TaggingService {
 
     private final AppConfig conf;
@@ -50,14 +48,8 @@ public class TaggingService {
 
     public void addApplicationTags(Construct scope) {
         log.debug("addApplicationTags");
-
-        Map<String,String> mutated = TaggingService.fullyQualifiedTags(conf.getTagNamespace(), "app", conf.getTags());
-
-        log.debug("Adding tags {} to {} ", String.join(",", mutated.keySet()), scope.getNode().getId());
-
-        for (Map.Entry<String, String> entry : mutated.entrySet()) {
-            Tags.of(scope).add(entry.getKey(), entry.getValue());
-        }
+        
+        resolveTags(scope, conf.getTags(), "app");
     }
 
     public void addEnvironmentTags(Construct scope, Environment env, String qualifier) {
@@ -66,18 +58,16 @@ public class TaggingService {
         Map<String, String> envTags = new HashMap<>();
         envTags.put("Environment", env.name());
 
-        Map<String,String> mutated = TaggingService.fullyQualifiedTags(conf.getTagNamespace(), qualifier, envTags);
-
-        log.debug("Adding tags {} to {} ", String.join(",", mutated.keySet()), scope.getNode().getId());
-
-        for (Map.Entry<String, String> entry : mutated.entrySet()) {
-            Tags.of(scope).add(entry.getKey(), entry.getValue());
-        }
+        resolveTags(scope, envTags, qualifier);
     }
 
     public void addTags(Construct scope, Map<String, String> tags, String qualifier) {
         log.debug("addTags");
 
+        resolveTags(scope, tags, qualifier);
+    }
+
+    private void resolveTags(Construct scope, Map<String, String> tags, String qualifier) {
         Map<String,String> mutated = TaggingService.fullyQualifiedTags(conf.getTagNamespace(), qualifier, tags);
 
         log.debug("Adding tags {} to {} ", String.join(",", mutated.keySet()), scope.getNode().getId());

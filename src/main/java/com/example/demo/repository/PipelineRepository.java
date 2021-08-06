@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.example.demo.config.Environment;
 import com.example.demo.config.Label;
 import com.example.demo.config.PipelineConfig;
+import com.example.demo.config.LookupType;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

@@ -4,8 +4,10 @@ import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.StackType;
 import com.example.demo.config.VpcConfig;
+import com.example.demo.construct.nat.NatGatewayConfig;
+import com.example.demo.repository.NatGatewayRepository;
 import com.example.demo.repository.VpcRepository;
-import com.example.demo.factory.StackFactory;
+import com.example.demo.core.pipeline.StackFactory;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
+import software.amazon.awscdk.services.ec2.NatProvider;
 import software.amazon.awscdk.services.ec2.Vpc;
 
 @Component
@@ -28,16 +31,10 @@ public class NetworkStackService extends AbstractStackService {
 
     private final AppConfig config;
     private final StackFactory stackFactory;
-    //private final VpcFactory vpcFactory;
     private final TaggingService taggingService;
-    private final PipelineStageService outputService;
     private final VpcRepository vpcRepository;
+    private final NatGatewayRepository natGatewayRepository;
     private final PipelineStageService pipelineStageService;
-
-    private Construct scope;
-    private Stack stack;
-    private Environment env = Environment.DEV;
-    private String namespace = "Default";
 
     public Stack provision(Construct scope, String namespace, Environment stage) {
         log.debug("provision");
@@ -54,7 +51,11 @@ public class NetworkStackService extends AbstractStackService {
     private void addPublicPrivateIsolatedVpc(Stack stack, Environment stage, VpcConfig vpcConf) {
         log.debug("addPublicPrivateIsolatedVpc");
 
-        // Perform any resource specific business logic here e.g. add nat gateway alarm in prod
+        // Perform any stack specific domain logic here
+
+        NatProvider nat = natGatewayRepository.create(stack, "", stage, NatGatewayConfig.builder().build()).getNatProvider();
+
+        vpcConf.setNat(nat);
 
         Vpc vpc = vpcRepository.create(stack, "", stage, vpcConf);
 

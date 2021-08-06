@@ -25,7 +25,12 @@ public class AppConfig {
     Map<String, String> tags = new HashMap<>();
 
     public AppConfig() {
+        env.put(Environment.CICD, new EnvConfig());
+        env.put(Environment.BUILD, new EnvConfig());
+        env.put(Environment.DEMO, new EnvConfig());
+        env.put(Environment.DEV, new EnvConfig());
         env.put(Environment.TEST, new EnvConfig());
+        env.put(Environment.PERF, new EnvConfig());
         env.put(Environment.PROD, new EnvConfig());
     }
 }

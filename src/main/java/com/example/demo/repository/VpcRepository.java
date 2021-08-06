@@ -3,20 +3,25 @@ package com.example.demo.repository;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.example.demo.config.Environment;
 import com.example.demo.config.Label;
+import com.example.demo.config.LookupType;
 import com.example.demo.config.VpcConfig;
-import com.example.demo.service.PipelineStageService;
+import com.example.demo.construct.nat.NatGatewayConfig;
+import com.example.demo.construct.nat.NatGatewayProvider;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.CfnOutput;
 import software.amazon.awscdk.core.Construct;
+import software.amazon.awscdk.services.ec2.ISubnet;
 import software.amazon.awscdk.services.ec2.IVpc;
+import software.amazon.awscdk.services.ec2.NatProvider;
 import software.amazon.awscdk.services.ec2.SubnetConfiguration;
 import software.amazon.awscdk.services.ec2.SubnetType;
 import software.amazon.awscdk.services.ec2.Vpc;
@@ -34,15 +39,15 @@ public class VpcRepository extends AbstractResourceRepository<IVpc, VpcConfig> {
     public Vpc create(Construct scope, String namespace, Environment stage, VpcConfig conf) {
         return Vpc.Builder
                 .create(scope, Label.builder()
-                                     .namespace("")
-                                     .stage("")
-                                     .resource(RESOURCE_NAME)
-                                     .build()
-                                     .toString())
+                                    .namespace("")
+                                    .stage("")
+                                    .resource(RESOURCE_NAME)
+                                    .build()
+                                    .toString())
                 .cidr(conf.getCidr())
                 .maxAzs(Environment.PROD == stage ? 2 : 1)
                 .natGateways(Environment.PROD == stage ? 2 : 1)
-                //.natGatewayProvider(nat)
+                //.natGatewayProvider(conf.getNat() != null ? conf.getNat() : NatProvider.gateway())
                 .subnetConfiguration(Arrays.asList(
                         SubnetConfiguration
                                 .builder()
@@ -116,6 +121,18 @@ public class VpcRepository extends AbstractResourceRepository<IVpc, VpcConfig> {
         List<CfnOutput> outputs = new ArrayList<>();
 
         outputs.add(createOutput(scope, "VpcId", "The Vpc Id", resource.getVpcId()));
+        outputs.add(createOutput(scope, "VpcAZs", "The VPC availability zones", String.join(",",
+                resource.getAvailabilityZones())));
+        outputs.add(createOutput(scope, "VpcPublicSubnets", "The VPC Public Subnets", resource
+                .getPrivateSubnets()
+                .stream()
+                .map(ISubnet::getSubnetId)
+                .collect(Collectors
+                        .joining(","))));
+        outputs.add(createOutput(scope, "VpcPrivateSubnets", "The VPC Private Subnets",
+                resource.getPublicSubnets().stream().map(ISubnet::getSubnetId).collect(Collectors.joining(","))));
+        outputs.add(createOutput(scope, "VpcIsolatedSubnets", "The VPC Isolated Subnets",
+                resource.getIsolatedSubnets().stream().map(ISubnet::getSubnetId).collect(Collectors.joining(","))));
 
         return outputs;
     }

@@ -3,13 +3,12 @@ package com.example.demo.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.example.demo.app.Root;
 import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.ImageBuildConfig;
 import com.example.demo.config.StackType;
 import com.example.demo.construct.imagebuilder.IImageBuilder;
-import com.example.demo.factory.StackFactory;
+import com.example.demo.core.pipeline.StackFactory;
 import com.example.demo.repository.ImageBuilderRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -28,14 +27,8 @@ public class ImageStackService extends AbstractStackService {
 
     private final AppConfig config;
     private final StackFactory stackFactory;
-    //private final ImageBuilderFactory imageBuilderFactory;
     private final TaggingService taggingService;
     private final ImageBuilderRepository imageBuilderRepository;
-
-    private Construct scope;
-    private Stack stack;
-    private Environment env = Environment.DEV;
-    private String namespace = "Default";
 
     public Stack provision(Construct scope, String namespace, Environment stage) {
         log.debug("provision");

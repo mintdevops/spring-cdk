@@ -1,5 +1,6 @@
 package com.example.demo.repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Component;
 import com.example.demo.config.Environment;
 import com.example.demo.config.ImageBuildConfig;
 import com.example.demo.config.Label;
+import com.example.demo.config.LookupType;
 import com.example.demo.construct.imagebuilder.AnsibleImageBuilder;
 import com.example.demo.construct.imagebuilder.IImageBuilder;
 import com.example.demo.construct.imagebuilder.ImageBuilderConfig;
@@ -53,6 +55,10 @@ public class ImageBuilderRepository extends AbstractResourceRepository<IImageBui
     }
 
     public List<CfnOutput> export(Construct scope, IImageBuilder resource) {
-        throw new NotImplementedException();
-    }
+        List<CfnOutput> outputs = new ArrayList<>();
+
+        outputs.add(createOutput(scope, "PipelineArn", "The Pipeline Arn", resource.getPipelineArn()));
+        outputs.add(createOutput(scope, "AmiId", "The Image Id", resource.getAmiId()));
+
+        return outputs;    }
 }

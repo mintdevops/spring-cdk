@@ -3,6 +3,7 @@ package com.example.demo.repository;
 import java.util.List;
 
 import com.example.demo.config.Environment;
+import com.example.demo.config.LookupType;
 
 import software.amazon.awscdk.core.CfnOutput;
 import software.amazon.awscdk.core.Construct;

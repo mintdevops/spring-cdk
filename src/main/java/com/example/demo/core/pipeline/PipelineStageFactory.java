@@ -1,4 +1,4 @@
-package com.example.demo.factory;
+package com.example.demo.core.pipeline;
 
 import java.util.HashMap;
 import java.util.Map;

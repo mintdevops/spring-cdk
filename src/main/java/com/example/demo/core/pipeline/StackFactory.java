@@ -1,4 +1,4 @@
-package com.example.demo.factory;
+package com.example.demo.core.pipeline;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

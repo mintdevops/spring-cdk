@@ -1,14 +1,7 @@
 package com.example.demo.service;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
-import javax.annotation.PostConstruct;
-
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,12 +10,10 @@ import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.StackType;
 import com.example.demo.repository.PipelineRepository;
-import com.example.demo.factory.StackFactory;
-import com.example.demo.factory.PipelineStageFactory;
+import com.example.demo.core.pipeline.StackFactory;
+import com.example.demo.core.pipeline.PipelineStageFactory;
 
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import software.amazon.awscdk.core.CfnOutput;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.core.Stage;
@@ -35,22 +26,13 @@ import software.amazon.awscdk.pipelines.StageDeployment;
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class PipelineStackService extends AbstractStackService {
 
-    //public static final StackType QUALIFIER = StackType.PIPELINE;
-
-    //private final Root root;
     private final AppConfig config;
     private final StackFactory stackFactory;
-    //private final PipelineFactory pipelineFactory;
     private final PipelineStageFactory stageFactory;
     private final TaggingService taggingService;
-    //private final OutputService outputService;
     private final PipelineRepository pipelineRepository;
     private final PipelineStageService pipelineStageService;
 
-    //private Construct scope;
-    //private Stack stack;
-    //private Environment env = Environment.CICD;
-    //private String namespace;
 
     public Stack provision(Construct scope, String namespace, Environment stage) {
         log.debug("provision");

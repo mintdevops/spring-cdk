@@ -42,13 +42,9 @@ import software.amazon.awscdk.services.imagebuilder.CfnInfrastructureConfigurati
 import software.amazon.awscdk.services.s3.assets.Asset;
 
 @Log4j2
-@Data
-public class AnsibleImageBuilder extends Construct implements IImageBuilder {
+public class AnsibleImageBuilder extends AbstractImageBuilder {
 
     private static final String RESOURCE_DIR = "ansible";
-
-    public String pipelineArn;
-    public String amiId;
 
     public AnsibleImageBuilder(software.constructs.@NotNull Construct scope, @NotNull String id, ImageBuilderConfig props) {
         super(scope, id);
@@ -154,8 +150,6 @@ public class AnsibleImageBuilder extends Construct implements IImageBuilder {
             infra.addDependsOn(profile);
             pipeline.addDependsOn(infra);
 
-            pipelineArn = pipeline.getAttrArn();
-
             List<Distribution> distributions = new ArrayList<>();
             for (String a : props.getAccounts()) {
                 for (String r : props.getRegions()) {
@@ -207,9 +201,8 @@ public class AnsibleImageBuilder extends Construct implements IImageBuilder {
 //                                                           .description("Machine image produced by EC2 image pipeline")
 //                                                           .build();
 
-            amiId = image.getAttrImageId();
-
-
+            setPipelineArn(pipeline.getAttrArn());
+            setAmiId(image.getAttrImageId());
 
         } catch (JsonProcessingException e) {
             e.printStackTrace();

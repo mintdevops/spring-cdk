@@ -17,6 +17,7 @@ import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.CfnOutput;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.IVpc;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 @Component
 @Log4j2
@@ -30,7 +31,6 @@ public class ImageBuilderRepository extends AbstractResourceRepository<IImageBui
     public IImageBuilder create(Construct scope, String namespace, Environment stage, ImageBuildConfig conf) {
         IVpc vpc = vpcRepository.lookup(scope, conf.getVpcStackName(), LookupType.DEPLOY);
 
-        // TODO: Use factory
         return new AnsibleImageBuilder(scope, Label.builder()
                                                     .namespace("")
                                                     .stage("")
@@ -49,9 +49,10 @@ public class ImageBuilderRepository extends AbstractResourceRepository<IImageBui
 
     @Override
     public IImageBuilder lookup(Construct scope, String stackName, LookupType lookupType) {
-        throw new IllegalStateException();
+        throw new NotImplementedException();
     }
+
     public List<CfnOutput> export(Construct scope, IImageBuilder resource) {
-        throw new IllegalStateException();
+        throw new NotImplementedException();
     }
 }

@@ -20,6 +20,7 @@ import software.amazon.awscdk.pipelines.CodeBuildStep;
 import software.amazon.awscdk.pipelines.CodePipeline;
 import software.amazon.awscdk.pipelines.CodePipelineSource;
 import software.amazon.awscdk.pipelines.GitHubSourceOptions;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 @Component
 @Log4j2
@@ -74,7 +75,7 @@ public class PipelineRepository extends AbstractResourceRepository<CodePipeline,
 
     @Override
     public CodePipeline lookup(Construct scope, String stackName, LookupType lookupType) {
-        throw new IllegalStateException();
+        throw new NotImplementedException();
     }
 
     public List<CfnOutput> export(Construct scope, CodePipeline resource) {

@@ -80,12 +80,7 @@ public class AnsibleImageBuilder extends AbstractImageBuilder {
         SecurityGroup securityGroup =
                 SecurityGroup.Builder.create(this, "DefaultSecurityGroup")
                                      .allowAllOutbound(true)
-                                     .vpc(Vpc.fromVpcAttributes(this, "Vpc",
-                                             VpcAttributes
-                                                     .builder()
-                                                     .vpcId(props.vpcId)
-                                                     .availabilityZones(props.availabilityZones)
-                                                     .build()))
+                                     .vpc(props.getVpc())
                                      .build();
 
         // Usually we need to reach the internet to download packages
@@ -132,7 +127,7 @@ public class AnsibleImageBuilder extends AbstractImageBuilder {
                             .create(this, "InfraConfig")
                             .name(props.getImageName())
                             .instanceTypes(Collections.singletonList("m5.large"))
-                            .subnetId(props.subnetId)
+                            .subnetId(props.getVpc().getPrivateSubnets().stream().findFirst().orElseThrow(IllegalArgumentException::new).getSubnetId())
                             .securityGroupIds(Collections.singletonList(securityGroup.getSecurityGroupId()))
                             .instanceProfileName(profile.getInstanceProfileName())
                             .build();

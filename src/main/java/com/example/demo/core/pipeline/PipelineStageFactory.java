@@ -12,6 +12,7 @@ import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.Label;
 import com.example.demo.config.StackType;
+import com.example.demo.service.AppStackService;
 import com.example.demo.service.IStackService;
 import com.example.demo.service.ImageStackService;
 import com.example.demo.service.NetworkStackService;
@@ -33,6 +34,7 @@ public class PipelineStageFactory {
     private final TaggingService taggingService;
     private final NetworkStackService networkStackService;
     private final ImageStackService imageStackService;
+    private final AppStackService appStackService;
 
     private final Map<StackType, IStackService> stackMap = new HashMap<>();
 
@@ -40,6 +42,7 @@ public class PipelineStageFactory {
     public void registerStacks() {
         stackMap.put(StackType.NETWORK, networkStackService);
         stackMap.put(StackType.IMAGE, imageStackService);
+        stackMap.put(StackType.WORKLOAD, appStackService);
 
         // TODO: Support user provided stacks
     }
@@ -73,7 +76,7 @@ public class PipelineStageFactory {
         Stage pipelineStage = Stage.Builder.create(parent,
                 Label.builder()
                      .namespace("")
-                     .stage(stage.toString())
+                     .stage(stage.name())
                      .resource(RESOURCE_NAME)
                      .build()
                      .toString())
@@ -83,8 +86,7 @@ public class PipelineStageFactory {
         IStackService stackService = stackMap.get(conf.getPipeline().getStack());
 
         log.debug("Adding stack {} to stage {}", conf.getPipeline().getStack(), pipelineStage.getStageName());
-
-        stackService.provision(pipelineStage, namespace, stage);
+        stackService.provision(pipelineStage, conf.getName(), stage);
 
         taggingService.addEnvironmentTags(pipelineStage, stage, conf.getPipeline().getStack().toString());
 

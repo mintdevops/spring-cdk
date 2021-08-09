@@ -1,10 +1,12 @@
 package com.example.demo.service;
 
+import java.util.ArrayList;
+
 import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.StackType;
 import com.example.demo.config.VpcConfig;
-import com.example.demo.construct.nat.NatGatewayConfig;
+import com.example.demo.construct.natgateway.NatGatewayConfig;
 import com.example.demo.repository.NatGatewayRepository;
 import com.example.demo.repository.VpcRepository;
 import com.example.demo.core.pipeline.StackFactory;
@@ -34,7 +36,6 @@ public class NetworkStackService extends AbstractStackService {
     private final TaggingService taggingService;
     private final VpcRepository vpcRepository;
     private final NatGatewayRepository natGatewayRepository;
-    private final PipelineStageService pipelineStageService;
 
     public Stack provision(Construct scope, String namespace, Environment stage) {
         log.debug("provision");
@@ -53,13 +54,17 @@ public class NetworkStackService extends AbstractStackService {
 
         // Perform any stack specific domain logic here
 
-        NatProvider nat = natGatewayRepository.create(stack, "", stage, NatGatewayConfig.builder().build()).getNatProvider();
+        NatProvider nat = natGatewayRepository.create(stack, "", stage,
+                NatGatewayConfig.builder()
+                                .egressThreshold(vpcConf.getNat().getEgressThreshold())
+                                .allocationIds(new ArrayList<>())
+                                .build()).getNatProvider();
 
-        vpcConf.setNat(nat);
+        vpcConf.setNatProvider(nat);
 
         Vpc vpc = vpcRepository.create(stack, "", stage, vpcConf);
 
-        vpcRepository.export(stack, vpc).stream().forEach(pipelineStageService::addOutput);
+        vpcRepository.exportSSM(stack, vpcRepository.export(stack, vpc));
     }
 
 }

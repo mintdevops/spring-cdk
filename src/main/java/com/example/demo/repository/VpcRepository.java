@@ -2,23 +2,31 @@ package com.example.demo.repository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.example.demo.config.AppConfig;
+import com.example.demo.config.CfnNag;
+import com.example.demo.config.CfnNagRule;
 import com.example.demo.config.Environment;
 import com.example.demo.config.Label;
 import com.example.demo.config.LookupType;
 import com.example.demo.config.VpcConfig;
-import com.example.demo.construct.nat.NatGatewayConfig;
-import com.example.demo.construct.nat.NatGatewayProvider;
+import com.example.demo.core.vpc.VpcEndpointServiceTypes;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.CfnOutput;
 import software.amazon.awscdk.core.Construct;
+import software.amazon.awscdk.services.ec2.CfnSubnet;
+import software.amazon.awscdk.services.ec2.GatewayVpcEndpointAwsService;
+import software.amazon.awscdk.services.ec2.GatewayVpcEndpointOptions;
 import software.amazon.awscdk.services.ec2.ISubnet;
 import software.amazon.awscdk.services.ec2.IVpc;
 import software.amazon.awscdk.services.ec2.NatProvider;
@@ -35,9 +43,11 @@ public class VpcRepository extends AbstractResourceRepository<IVpc, VpcConfig> {
 
     private final static String RESOURCE_NAME = "Vpc";
 
+    private final AppConfig conf;
+
     @Override
     public Vpc create(Construct scope, String namespace, Environment stage, VpcConfig conf) {
-        return Vpc.Builder
+        Vpc vpc = Vpc.Builder
                 .create(scope, Label.builder()
                                     .namespace("")
                                     .stage("")
@@ -47,7 +57,7 @@ public class VpcRepository extends AbstractResourceRepository<IVpc, VpcConfig> {
                 .cidr(conf.getCidr())
                 .maxAzs(Environment.PROD == stage ? 2 : 1)
                 .natGateways(Environment.PROD == stage ? 2 : 1)
-                //.natGatewayProvider(conf.getNat() != null ? conf.getNat() : NatProvider.gateway())
+                .natGatewayProvider(conf.getNatProvider() != null ? conf.getNatProvider() : NatProvider.gateway())
                 .subnetConfiguration(Arrays.asList(
                         SubnetConfiguration
                                 .builder()
@@ -69,6 +79,60 @@ public class VpcRepository extends AbstractResourceRepository<IVpc, VpcConfig> {
                                 .build()
                 ))
                 .build();
+
+        addS3Endpoint(vpc);
+        addVpcLogs(vpc);
+
+        return vpc;
+    }
+
+    /**
+     * Adds an S3 endpoint to the VPC.
+     * <p>
+     * When using a NAT gateway you need to manage egress traffic to control your AWS costs. Many applications access the
+     * S3 service at both deploy and runtime so it usually a good idea to configure it as it can potentially save you
+     * money if you're reading/writing large amounts of data from S3.
+     */
+    private void addS3Endpoint(Vpc vpc) {
+        vpc.addGatewayEndpoint(
+                VpcEndpointServiceTypes.S3.toString(),
+                GatewayVpcEndpointOptions.builder().service(GatewayVpcEndpointAwsService.S3).build()
+        );
+    }
+
+    /**
+     * Adds flow logs to the VPC.
+     * <p>
+     * By default they are stored in S3 where they can be ingested in to other services for analysis e.g. GuardDuty
+     * for threat detection or Athena for customized analysis.
+     * <p>
+     * Flow logs can be used to respond to security events, or analyse the performance of your applications at the
+     * packet level.
+     */
+    private void addVpcLogs(Vpc vpc) {
+        vpc.addFlowLog("FlowLog");
+
+        // These will nearly always be publicly accessible instances with either an AWS assigned IP or a customer
+        // assigned EIP
+        // If using cfg_nag (https://github.com/stelligent/cfn_nag) don't flag these instances
+        List<ISubnet> subnets = vpc.getPublicSubnets();
+        for (ISubnet s : subnets) {
+            CfnSubnet cfnSubnet = (CfnSubnet) s.getNode().getDefaultChild();
+
+            CfnNag nag = CfnNag.builder().rules_to_suppress(Collections.singletonList(
+                    CfnNagRule.builder()
+                              .id("W33")
+                              .reason("Allow Public Subnets to have MapPublicIpOnLaunch set to true")
+                              .build()
+            )).build();
+
+            Map<String, Object> metadata = new HashMap<>();
+
+            metadata.put("cfn_nag", nag);
+
+            cfnSubnet.getCfnOptions().setMetadata(metadata);
+        }
+
     }
 
     @Override
@@ -78,6 +142,17 @@ public class VpcRepository extends AbstractResourceRepository<IVpc, VpcConfig> {
     }
 
     private IVpc lookupVpcAtDeployByStackName(Construct scope, String stackName) {
+        if (conf.isDemo()) {
+            return Vpc.fromVpcAttributes(scope, "DemoVpc",
+                    VpcAttributes.builder()
+                                 .vpcId("vpc-12345")
+                                 .publicSubnetIds(Collections.singletonList("subnet-123"))
+                                 .privateSubnetIds(Collections.singletonList("subnet-456"))
+                                 .isolatedSubnetIds(Collections.singletonList("subnet-789"))
+                                 .availabilityZones(Collections.singletonList("eu-west-1a"))
+                                 .build());
+        }
+
         String vpcId = StringParameter
                 .valueForStringParameter(
                         scope,

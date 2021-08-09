@@ -4,4 +4,5 @@ public enum StackType {
     NETWORK,
     IMAGE,
     PIPELINE,
+    WORKLOAD
 }

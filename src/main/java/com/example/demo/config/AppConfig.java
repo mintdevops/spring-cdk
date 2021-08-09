@@ -23,6 +23,7 @@ public class AppConfig {
     PipelineConfig pipeline = new PipelineConfig();
     Map<Environment, EnvConfig> env = new HashMap<>();
     Map<String, String> tags = new HashMap<>();
+    boolean demo = false;
 
     public AppConfig() {
         env.put(Environment.CICD, new EnvConfig());

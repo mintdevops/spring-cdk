@@ -18,7 +18,7 @@ import lombok.Data;
 @Component
 @ConfigurationProperties(prefix = "app.image")
 @Validated
-public class ImageBuildConfig implements IResourceConfig {
+public class ImageBuildConfig {
 
     /**
      * The Vpc stack name.

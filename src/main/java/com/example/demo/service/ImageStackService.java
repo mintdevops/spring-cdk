@@ -6,16 +6,20 @@ import org.springframework.stereotype.Component;
 import com.example.demo.config.AppConfig;
 import com.example.demo.config.Environment;
 import com.example.demo.config.ImageBuildConfig;
+import com.example.demo.config.LookupType;
 import com.example.demo.config.StackType;
 import com.example.demo.construct.imagebuilder.IImageBuilder;
+import com.example.demo.construct.imagebuilder.ImageBuilderConfig;
 import com.example.demo.core.pipeline.StackFactory;
 import com.example.demo.repository.ImageBuilderRepository;
+import com.example.demo.repository.VpcRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
+import software.amazon.awscdk.services.ec2.IVpc;
 
 @Component
 @Log4j2
@@ -28,6 +32,7 @@ public class ImageStackService extends AbstractStackService {
     private final AppConfig config;
     private final StackFactory stackFactory;
     private final TaggingService taggingService;
+    private final VpcRepository vpcRepository;
     private final ImageBuilderRepository imageBuilderRepository;
 
     public Stack provision(Construct scope, String namespace, Environment stage) {
@@ -42,12 +47,21 @@ public class ImageStackService extends AbstractStackService {
         return stack;
     }
 
-    private IImageBuilder addImageBuilder(Stack stack, Environment stage, ImageBuildConfig imageBuilderConf) {
+    private void addImageBuilder(Stack stack, Environment stage, ImageBuildConfig conf) {
         log.debug("addImageBuilder");
 
-        // Perform any resource specific business logic here
+        // Perform any stack specific domain logic here
 
-        return imageBuilderRepository.create(stack, "", stage, imageBuilderConf);
+        IVpc vpc = vpcRepository.lookup(stack, conf.getVpcStackName(), LookupType.DEPLOY);
+
+        IImageBuilder builder = imageBuilderRepository.create(stack, "", stage, ImageBuilderConfig.builder()
+                                                                                 .vpc(vpc)
+                                                                                 .imageName(conf.getImageName())
+                                                                                 .accounts(conf.getAccounts())
+                                                                                 .regions(conf.getRegions())
+                                                                                 .build());
+
+        imageBuilderRepository.exportSSM(stack, imageBuilderRepository.export(stack, builder));
     }
 
 }

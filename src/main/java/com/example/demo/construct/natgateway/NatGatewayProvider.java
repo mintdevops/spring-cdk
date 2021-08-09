@@ -1,4 +1,4 @@
-package com.example.demo.construct.nat;
+package com.example.demo.construct.natgateway;
 
 import java.util.ArrayList;
 import java.util.HashMap;

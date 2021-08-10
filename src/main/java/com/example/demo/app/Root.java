@@ -14,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.App;
 
+/**
+ * The type Root.
+ */
 @Component
 @Log4j2
 @Getter
@@ -24,15 +27,20 @@ public class Root {
     private final App rootScope = new App();
     private final PipelineStackService pipelineStackService;
 
+    /**
+     * Init.
+     */
     @PostConstruct
     public void init() {
         log.debug(config.toString());
     }
 
+    /**
+     * Synth.
+     */
     public void synth() {
         log.debug("synth");
 
-        log.debug(pipelineStackService);
         pipelineStackService.provision(rootScope, "", Environment.CICD);
 
         rootScope.synth();

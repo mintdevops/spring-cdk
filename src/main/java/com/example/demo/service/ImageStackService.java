@@ -34,6 +34,7 @@ public class ImageStackService extends AbstractStackService {
     private final TaggingService taggingService;
     private final VpcRepository vpcRepository;
     private final ImageBuilderRepository imageBuilderRepository;
+    private final StackOutputService stackOutputService;
 
     public Stack provision(Construct scope, String namespace, Environment stage) {
         log.debug("provision");
@@ -61,7 +62,8 @@ public class ImageStackService extends AbstractStackService {
                                                                                  .regions(conf.getRegions())
                                                                                  .build());
 
-        imageBuilderRepository.exportSSM(stack, imageBuilderRepository.export(stack, builder));
+        imageBuilderRepository.export(stack, builder).forEach(cfnOutput -> stackOutputService.addOutput(stack,  stage,
+                cfnOutput));;
     }
 
 }

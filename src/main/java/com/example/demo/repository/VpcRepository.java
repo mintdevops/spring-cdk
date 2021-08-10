@@ -156,27 +156,27 @@ public class VpcRepository extends AbstractResourceRepository<IVpc, VpcConfig> {
         String vpcId = StringParameter
                 .valueForStringParameter(
                         scope,
-                        stackNameToSSMParam(stackName, "VpcId")
+                        stackNameToSsmParam(stackName, "VpcId")
                 );
         List<String> azs = Arrays.asList(StringParameter
                 .valueForStringParameter(
                         scope,
-                        stackNameToSSMParam(stackName, "VpcAZs")
+                        stackNameToSsmParam(stackName, "VpcAZs")
                 ).split(","));
         List<String> publicSubnets = Arrays.asList(StringParameter
                 .valueForStringParameter(
                         scope,
-                        stackNameToSSMParam(stackName, "VpcPublicSubnets")
+                        stackNameToSsmParam(stackName, "VpcPublicSubnets")
                 ).split(","));
         List<String> privateSubnets = Arrays.asList(StringParameter
                 .valueForStringParameter(
                         scope,
-                        stackNameToSSMParam(stackName, "VpcPrivateSubnets")
+                        stackNameToSsmParam(stackName, "VpcPrivateSubnets")
                 ).split(","));
         List<String> isolatedSubnets = Arrays.asList(StringParameter
                 .valueForStringParameter(
                         scope,
-                        stackNameToSSMParam(stackName, "VpcIsolatedSubnets")
+                        stackNameToSsmParam(stackName, "VpcIsolatedSubnets")
                 ).split(","));
 
         log.debug("Looking up vpc at deploy time {}", vpcId);

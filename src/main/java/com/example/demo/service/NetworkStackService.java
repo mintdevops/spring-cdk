@@ -36,6 +36,7 @@ public class NetworkStackService extends AbstractStackService {
     private final TaggingService taggingService;
     private final VpcRepository vpcRepository;
     private final NatGatewayRepository natGatewayRepository;
+    private final StackOutputService stackOutputService;
 
     public Stack provision(Construct scope, String namespace, Environment stage) {
         log.debug("provision");
@@ -64,7 +65,8 @@ public class NetworkStackService extends AbstractStackService {
 
         Vpc vpc = vpcRepository.create(stack, "", stage, vpcConf);
 
-        vpcRepository.exportSSM(stack, vpcRepository.export(stack, vpc));
+        vpcRepository.export(stack, vpc).forEach(cfnOutput -> stackOutputService.addOutput(stack, stage,
+                cfnOutput));
     }
 
 }

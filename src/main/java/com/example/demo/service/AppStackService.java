@@ -20,6 +20,7 @@ import com.example.demo.repository.VpcRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import software.amazon.awscdk.core.CfnOutput;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.ec2.IVpc;
@@ -38,6 +39,7 @@ public class AppStackService extends AbstractStackService {
     private final VpcRepository vpcRepository;
     private final ImageBuilderRepository imageBuilderRepository;
     private final ImmutableServerRepository immutableServerRepository;
+    private final StackOutputService stackOutputService;
 
     @Override
     public Stack provision(Construct scope, String namespace, Environment stage) {
@@ -73,7 +75,9 @@ public class AppStackService extends AbstractStackService {
         ImmutableServer server = immutableServerRepository.create(stack, "", stage,
                 ImmutableServerConfig.builder().vpc(vpc).imageId(image.getAmiId()).asg(conf).build());
 
-        immutableServerRepository.exportSSM(stack, immutableServerRepository.export(stack, server));
+
+        immutableServerRepository.export(stack, server).forEach(cfnOutput -> stackOutputService.addOutput(stack,  stage,
+                cfnOutput));
     }
 
     private String coalesceStackName(Stack stack, Environment stageFrom, Environment stageTo) {

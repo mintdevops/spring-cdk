@@ -2,24 +2,21 @@ package com.example.demo.service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.example.demo.config.AppConfig;
-import com.example.demo.config.Environment;
+import com.example.demo.core.Environment;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Tags;
 
+/**
+ * Manage tags for infrastructure resources.
+ */
 @Component
 @Log4j2
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))

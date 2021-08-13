@@ -1,0 +1,186 @@
+com.example.demo.Ec2WorkloadStackTest.devStack=[
+  {
+    "Mappings": {
+      "DevAppAsgAmiMap11447A8C": {
+        "eu-west-2": {
+          "ami": "app-123"
+        }
+      }
+    },
+    "Outputs": {
+      "AsgName": {
+        "Description": "The AutoScalingGroup Name",
+        "Export": {
+          "Name": "Dev-DEV-AsgName"
+        },
+        "Value": {
+          "Ref": "DevAppAsgASGD412840B"
+        }
+      }
+    },
+    "Resources": {
+      "DevAppAppRoleA3E9F5D5": {
+        "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Statement": [
+              {
+                "Action": "sts:AssumeRole",
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "ec2.",
+                        {
+                          "Ref": "AWS::URLSuffix"
+                        }
+                      ]
+                    ]
+                  }
+                }
+              }
+            ],
+            "Version": "2012-10-17"
+          },
+          "ManagedPolicyArns": [
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:",
+                  {
+                    "Ref": "AWS::Partition"
+                  },
+                  ":iam::aws:policy/AmazonSSMManagedInstanceCore"
+                ]
+              ]
+            }
+          ],
+          "Tags": [
+            {
+              "Key": "io.mintdevops.app/Owner",
+              "Value": "human@mintdevops.io"
+            }
+          ]
+        },
+        "Type": "AWS::IAM::Role"
+      },
+      "DevAppAppSecurityGroupBA17D08E": {
+        "Properties": {
+          "GroupDescription": "Dev/DevApp/AppSecurityGroup",
+          "SecurityGroupEgress": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "Allow all outbound traffic by default",
+              "IpProtocol": "-1"
+            }
+          ],
+          "SecurityGroupIngress": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "from 0.0.0.0/0:8080",
+              "FromPort": 8080,
+              "IpProtocol": "tcp",
+              "ToPort": 8080
+            }
+          ],
+          "Tags": [
+            {
+              "Key": "io.mintdevops.app/Owner",
+              "Value": "human@mintdevops.io"
+            }
+          ],
+          "VpcId": "vpc-12345"
+        },
+        "Type": "AWS::EC2::SecurityGroup"
+      },
+      "DevAppAsgASGD412840B": {
+        "Properties": {
+          "DesiredCapacity": "1",
+          "LaunchConfigurationName": {
+            "Ref": "DevAppAsgLaunchConfigFC779980"
+          },
+          "MaxSize": "1",
+          "MinSize": "1",
+          "Tags": [
+            {
+              "Key": "io.mintdevops.app/Owner",
+              "PropagateAtLaunch": true,
+              "Value": "human@mintdevops.io"
+            },
+            {
+              "Key": "Name",
+              "PropagateAtLaunch": true,
+              "Value": "Dev/DevApp/Asg"
+            }
+          ],
+          "VPCZoneIdentifier": [
+            "subnet-456"
+          ]
+        },
+        "Type": "AWS::AutoScaling::AutoScalingGroup",
+        "UpdatePolicy": {
+          "AutoScalingScheduledAction": {
+            "IgnoreUnmodifiedGroupSizeProperties": true
+          }
+        }
+      },
+      "DevAppAsgInstanceProfile44C954C2": {
+        "Properties": {
+          "Roles": [
+            {
+              "Ref": "DevAppAppRoleA3E9F5D5"
+            }
+          ]
+        },
+        "Type": "AWS::IAM::InstanceProfile"
+      },
+      "DevAppAsgLaunchConfigFC779980": {
+        "DependsOn": [
+          "DevAppAppRoleA3E9F5D5"
+        ],
+        "Properties": {
+          "IamInstanceProfile": {
+            "Ref": "DevAppAsgInstanceProfile44C954C2"
+          },
+          "ImageId": {
+            "Fn::FindInMap": [
+              "DevAppAsgAmiMap11447A8C",
+              {
+                "Ref": "AWS::Region"
+              },
+              "ami"
+            ]
+          },
+          "InstanceType": "t3.nano",
+          "SecurityGroups": [
+            {
+              "Fn::GetAtt": [
+                "DevAppAppSecurityGroupBA17D08E",
+                "GroupId"
+              ]
+            }
+          ],
+          "UserData": {
+            "Fn::Base64": "#!/bin/bash"
+          }
+        },
+        "Type": "AWS::AutoScaling::LaunchConfiguration"
+      },
+      "SSMParamAsgName4CB79B44": {
+        "Properties": {
+          "Name": "/Dev-DEV/AsgName",
+          "Tags": {
+            "io.mintdevops.app/Owner": "human@mintdevops.io"
+          },
+          "Type": "String",
+          "Value": {
+            "Ref": "DevAppAsgASGD412840B"
+          }
+        },
+        "Type": "AWS::SSM::Parameter"
+      }
+    }
+  }
+]

@@ -1,0 +1,407 @@
+com.example.demo.GoldenImageStackTest.testStack=[
+  {
+    "Outputs": {
+      "AmiId": {
+        "Description": "The Image Id",
+        "Export": {
+          "Name": "Prod-PROD-AmiId"
+        },
+        "Value": {
+          "Fn::GetAtt": [
+            "ImageId",
+            "ProdImageAmi8F43C7E8"
+          ]
+        }
+      },
+      "PipelineArn": {
+        "Description": "The Pipeline Arn",
+        "Export": {
+          "Name": "Prod-PROD-PipelineArn"
+        },
+        "Value": {
+          "Fn::GetAtt": [
+            "Arn",
+            "ProdImageImagePipeline9305A797"
+          ]
+        }
+      }
+    },
+    "Parameters": {
+      "AssetParametersac307e6dbb4098cddcd4c7853dc3758c61352cd577e557a951b4238fa883accbArtifactHash84015C3A": {
+        "Description": "Artifact hash for asset \"ac307e6dbb4098cddcd4c7853dc3758c61352cd577e557a951b4238fa883accb\"",
+        "Type": "String"
+      },
+      "AssetParametersac307e6dbb4098cddcd4c7853dc3758c61352cd577e557a951b4238fa883accbS3Bucket7972CC7D": {
+        "Description": "S3 bucket for asset \"ac307e6dbb4098cddcd4c7853dc3758c61352cd577e557a951b4238fa883accb\"",
+        "Type": "String"
+      },
+      "AssetParametersac307e6dbb4098cddcd4c7853dc3758c61352cd577e557a951b4238fa883accbS3VersionKey8F8C7714": {
+        "Description": "S3 key for asset version \"ac307e6dbb4098cddcd4c7853dc3758c61352cd577e557a951b4238fa883accb\"",
+        "Type": "String"
+      },
+      "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter": {
+        "Default": "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2",
+        "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
+      }
+    },
+    "Resources": {
+      "ProdImageAmi8F43C7E8": {
+        "DeletionPolicy": "Retain",
+        "Properties": {
+          "DistributionConfigurationArn": {
+            "Fn::GetAtt": [
+              "Arn",
+              "ProdImageDistribution72DA65B9"
+            ]
+          },
+          "EnhancedImageMetadataEnabled": true,
+          "ImageRecipeArn": {
+            "Fn::GetAtt": [
+              "Arn",
+              "ProdImageRecipe07D102BD"
+            ]
+          },
+          "InfrastructureConfigurationArn": {
+            "Fn::GetAtt": [
+              "Arn",
+              "ProdImageInfraConfigE5BF379D"
+            ]
+          },
+          "Tags": {
+            "io.mintdevops.app/Owner": "human@mintdevops.io"
+          }
+        },
+        "Type": "AWS::ImageBuilder::Image",
+        "UpdateReplacePolicy": "Retain"
+      },
+      "ProdImageAnsibleComponent806A42A9": {
+        "Properties": {
+          "Data": {
+            "Fn::Join": [
+              "",
+              [
+                "name: \"ansible-playbook\"\ndescription: \"Execute an Ansible playbook\"\nschemaVersion: \"1.0\"\nphases:\n- name: \"build\"\n  steps:\n  - name: \"InstallAnsible\"\n    action: \"ExecuteBash\"\n    inputs:\n      commands:\n      - \"sudo yum install -y amazon-linux-extras\"\n      - \"sudo amazon-linux-extras enable ansible2\"\n      - \"sudo yum install -y ansible\"\n  - name: \"CreateWorkingDir\"\n    action: \"ExecuteBash\"\n    inputs:\n      commands:\n      - \"mkdir /tmp/ec2-golden-image\"\n  - name: \"DownloadPlaybook\"\n    action: \"S3Download\"\n    inputs:\n    - source: \"s3://",
+                {
+                  "Ref": "AssetParametersac307e6dbb4098cddcd4c7853dc3758c61352cd577e557a951b4238fa883accbS3Bucket7972CC7D"
+                },
+                "/",
+                {
+                  "Fn::Select": [
+                    0,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParametersac307e6dbb4098cddcd4c7853dc3758c61352cd577e557a951b4238fa883accbS3VersionKey8F8C7714"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Select": [
+                    1,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParametersac307e6dbb4098cddcd4c7853dc3758c61352cd577e557a951b4238fa883accbS3VersionKey8F8C7714"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "\"\n      destination: \"/tmp/ec2-golden-image/ansible.zip\"\n  - name: \"UnzipPlaybook\"\n    action: \"ExecuteBash\"\n    inputs:\n      commands:\n      - \"unzip /tmp/ec2-golden-image/ansible.zip -d /tmp/ec2-golden-image\"\n  - name: \"InvokePlaybook\"\n    action: \"ExecuteBinary\"\n    inputs:\n      path: \"ansible-playbook\"\n      arguments:\n      - \"/tmp/ec2-golden-image/playbook.yml\"\n  - name: \"DeletePlaybook\"\n    action: \"ExecuteBash\"\n    inputs:\n      commands:\n      - \"rm -rf /tmp/ec2-golden-image\"\n"
+              ]
+            ]
+          },
+          "Name": "GoldenImage-ansible-playbook",
+          "Platform": "Linux",
+          "Tags": {
+            "io.mintdevops.app/Owner": "human@mintdevops.io"
+          },
+          "Version": "1.0.0"
+        },
+        "Type": "AWS::ImageBuilder::Component"
+      },
+      "ProdImageAutomationInstanceProfileAAC53DDE": {
+        "Properties": {
+          "InstanceProfileName": {
+            "Ref": "ProdImageAutomationRoleB3D90BFE"
+          },
+          "Roles": [
+            {
+              "Ref": "ProdImageAutomationRoleB3D90BFE"
+            }
+          ]
+        },
+        "Type": "AWS::IAM::InstanceProfile"
+      },
+      "ProdImageAutomationRoleB3D90BFE": {
+        "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Statement": [
+              {
+                "Action": "sts:AssumeRole",
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "ec2.",
+                        {
+                          "Ref": "AWS::URLSuffix"
+                        }
+                      ]
+                    ]
+                  }
+                }
+              }
+            ],
+            "Version": "2012-10-17"
+          },
+          "ManagedPolicyArns": [
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:",
+                  {
+                    "Ref": "AWS::Partition"
+                  },
+                  ":iam::aws:policy/AmazonSSMManagedInstanceCore"
+                ]
+              ]
+            },
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:",
+                  {
+                    "Ref": "AWS::Partition"
+                  },
+                  ":iam::aws:policy/EC2InstanceProfileForImageBuilder"
+                ]
+              ]
+            }
+          ],
+          "Tags": [
+            {
+              "Key": "io.mintdevops.app/Owner",
+              "Value": "human@mintdevops.io"
+            }
+          ]
+        },
+        "Type": "AWS::IAM::Role"
+      },
+      "ProdImageAutomationRoleDefaultPolicyD4D8B67B": {
+        "Properties": {
+          "PolicyDocument": {
+            "Statement": [
+              {
+                "Action": [
+                  "s3:GetBucket*",
+                  "s3:GetObject*",
+                  "s3:List*"
+                ],
+                "Effect": "Allow",
+                "Resource": [
+                  {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:",
+                        {
+                          "Ref": "AWS::Partition"
+                        },
+                        ":s3:::",
+                        {
+                          "Ref": "AssetParametersac307e6dbb4098cddcd4c7853dc3758c61352cd577e557a951b4238fa883accbS3Bucket7972CC7D"
+                        }
+                      ]
+                    ]
+                  },
+                  {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:",
+                        {
+                          "Ref": "AWS::Partition"
+                        },
+                        ":s3:::",
+                        {
+                          "Ref": "AssetParametersac307e6dbb4098cddcd4c7853dc3758c61352cd577e557a951b4238fa883accbS3Bucket7972CC7D"
+                        },
+                        "/*"
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ],
+            "Version": "2012-10-17"
+          },
+          "PolicyName": "ProdImageAutomationRoleDefaultPolicyD4D8B67B",
+          "Roles": [
+            {
+              "Ref": "ProdImageAutomationRoleB3D90BFE"
+            }
+          ]
+        },
+        "Type": "AWS::IAM::Policy"
+      },
+      "ProdImageDefaultSecurityGroupC2E9897F": {
+        "Properties": {
+          "GroupDescription": "Prod/ProdImage/DefaultSecurityGroup",
+          "SecurityGroupEgress": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "Allow all outbound traffic by default",
+              "IpProtocol": "-1"
+            }
+          ],
+          "SecurityGroupIngress": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "from 0.0.0.0/0:443",
+              "FromPort": 443,
+              "IpProtocol": "tcp",
+              "ToPort": 443
+            }
+          ],
+          "Tags": [
+            {
+              "Key": "io.mintdevops.app/Owner",
+              "Value": "human@mintdevops.io"
+            }
+          ],
+          "VpcId": "vpc-12345"
+        },
+        "Type": "AWS::EC2::SecurityGroup"
+      },
+      "ProdImageDistribution72DA65B9": {
+        "Properties": {
+          "Description": "GoldenImage",
+          "Distributions": [ ],
+          "Name": "GoldenImage",
+          "Tags": {
+            "io.mintdevops.app/Owner": "human@mintdevops.io"
+          }
+        },
+        "Type": "AWS::ImageBuilder::DistributionConfiguration"
+      },
+      "ProdImageImagePipeline9305A797": {
+        "DependsOn": [
+          "ProdImageInfraConfigE5BF379D"
+        ],
+        "Properties": {
+          "ImageRecipeArn": {
+            "Fn::GetAtt": [
+              "Arn",
+              "ProdImageRecipe07D102BD"
+            ]
+          },
+          "InfrastructureConfigurationArn": {
+            "Fn::GetAtt": [
+              "Arn",
+              "ProdImageInfraConfigE5BF379D"
+            ]
+          },
+          "Name": "GoldenImage",
+          "Tags": {
+            "io.mintdevops.app/Owner": "human@mintdevops.io"
+          }
+        },
+        "Type": "AWS::ImageBuilder::ImagePipeline"
+      },
+      "ProdImageInfraConfigE5BF379D": {
+        "DependsOn": [
+          "ProdImageAutomationInstanceProfileAAC53DDE"
+        ],
+        "Properties": {
+          "InstanceProfileName": {
+            "Ref": "ProdImageAutomationRoleB3D90BFE"
+          },
+          "InstanceTypes": [
+            "m5.large"
+          ],
+          "Name": "GoldenImage",
+          "SecurityGroupIds": [
+            {
+              "Fn::GetAtt": [
+                "GroupId",
+                "ProdImageDefaultSecurityGroupC2E9897F"
+              ]
+            }
+          ],
+          "SubnetId": "subnet-456",
+          "Tags": {
+            "io.mintdevops.app/Owner": "human@mintdevops.io"
+          }
+        },
+        "Type": "AWS::ImageBuilder::InfrastructureConfiguration"
+      },
+      "ProdImageRecipe07D102BD": {
+        "Properties": {
+          "Components": [
+            {
+              "ComponentArn": {
+                "Fn::GetAtt": [
+                  "Arn",
+                  "ProdImageAnsibleComponent806A42A9"
+                ]
+              }
+            }
+          ],
+          "Name": "GoldenImage",
+          "ParentImage": {
+            "Ref": "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter"
+          },
+          "Tags": {
+            "io.mintdevops.app/Owner": "human@mintdevops.io"
+          },
+          "Version": "1.0.0"
+        },
+        "Type": "AWS::ImageBuilder::ImageRecipe"
+      },
+      "SSMParamAmiIdB96E7EBC": {
+        "DependsOn": [
+          "SSMParamPipelineArn2D2C5799"
+        ],
+        "Properties": {
+          "Name": "/Prod-PROD/AmiId",
+          "Tags": {
+            "io.mintdevops.app/Owner": "human@mintdevops.io"
+          },
+          "Type": "String",
+          "Value": {
+            "Fn::GetAtt": [
+              "ImageId",
+              "ProdImageAmi8F43C7E8"
+            ]
+          }
+        },
+        "Type": "AWS::SSM::Parameter"
+      },
+      "SSMParamPipelineArn2D2C5799": {
+        "Properties": {
+          "Name": "/Prod-PROD/PipelineArn",
+          "Tags": {
+            "io.mintdevops.app/Owner": "human@mintdevops.io"
+          },
+          "Type": "String",
+          "Value": {
+            "Fn::GetAtt": [
+              "Arn",
+              "ProdImageImagePipeline9305A797"
+            ]
+          }
+        },
+        "Type": "AWS::SSM::Parameter"
+      }
+    }
+  }
+]

@@ -41,7 +41,7 @@ public class CustomNatGateway extends Construct {
      * @param thresholdInGb Human readable size in GB e.g. 1GB
      */
     private void addEgressAlarm(NatGatewayProvider gw, String thresholdInGb) {
-        log.debug("addAlarms");
+        log.debug("addEgressAlarm");
 
         if (thresholdInGb == null || thresholdInGb.isEmpty()) {
             throw new IllegalStateException("No NAT gateway alarm threshold defined");

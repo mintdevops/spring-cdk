@@ -3,38 +3,41 @@ package com.example.demo.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
-import com.example.demo.repository.IResourceConfig;
-
 import lombok.Data;
 
 /**
- * The type Image build config v 2.
+ * Externalised configuration for the golden image pipeline.
  */
 @Data
 @Component
-@ConfigurationProperties(prefix = "app.image")
+//@ConfigurationProperties(prefix = "app.image")
 @Validated
 public class ImageBuildConfig {
 
     /**
-     * The Vpc stack name.
+     * The Vpc stack name. This is where the image automation will run.
      */
     String vpcStackName;
     /**
-     * The image name.
+     * The image name. This is the name given to the AMI produced by the image pipeline.
      */
+    @NotEmpty
     String imageName;
     /**
-     * The Accounts.
+     * A list of accounts to distribute the golden image to.
      */
-    List<String> accounts = new ArrayList<>();
+    List<@Pattern(regexp = "(\\d{10})") String> accounts = new ArrayList<>();
     /**
-     * The Regions.
+     * A list of regions to distribute the golden image to.
      */
+    // TODO: Validate list of available regions
     List<String> regions = new ArrayList<>();
 
 

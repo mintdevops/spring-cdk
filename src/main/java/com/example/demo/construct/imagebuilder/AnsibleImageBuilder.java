@@ -9,16 +9,17 @@ import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.example.demo.construct.imagebuilder.dist.AmiDistributionConfiguration;
+import com.example.demo.construct.imagebuilder.dist.Distribution;
+import com.example.demo.construct.imagebuilder.dist.LaunchPermission;
 import com.example.demo.construct.imagebuilder.spec.Component;
 import com.example.demo.construct.imagebuilder.spec.Inputs;
 import com.example.demo.construct.imagebuilder.spec.Phases;
 import com.example.demo.construct.imagebuilder.spec.Steps;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awscdk.core.CfnResource;
-import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.RemovalPolicy;
 import software.amazon.awscdk.services.ec2.AmazonLinuxGeneration;
 import software.amazon.awscdk.services.ec2.AmazonLinuxImageProps;
@@ -26,8 +27,6 @@ import software.amazon.awscdk.services.ec2.MachineImage;
 import software.amazon.awscdk.services.ec2.Peer;
 import software.amazon.awscdk.services.ec2.Port;
 import software.amazon.awscdk.services.ec2.SecurityGroup;
-import software.amazon.awscdk.services.ec2.Vpc;
-import software.amazon.awscdk.services.ec2.VpcAttributes;
 import software.amazon.awscdk.services.iam.CfnInstanceProfile;
 import software.amazon.awscdk.services.iam.ManagedPolicy;
 import software.amazon.awscdk.services.iam.Role;
@@ -42,11 +41,12 @@ import software.amazon.awscdk.services.imagebuilder.CfnInfrastructureConfigurati
 import software.amazon.awscdk.services.s3.assets.Asset;
 
 @Log4j2
+// FIXME: Extract interface to support other types of image builders
 public class AnsibleImageBuilder extends AbstractImageBuilder {
 
     private static final String RESOURCE_DIR = "ansible";
 
-    public AnsibleImageBuilder(software.constructs.@NotNull Construct scope, @NotNull String id, ImageBuilderConfig props) {
+    public AnsibleImageBuilder(software.constructs.@NotNull Construct scope, @NotNull String id, ImageBuilderSpec props) {
         super(scope, id);
 
         // Stage the playbook in S3
@@ -94,7 +94,7 @@ public class AnsibleImageBuilder extends AbstractImageBuilder {
                                                                     props.getImageName()))
                                                             .platform("Linux")
                                                             .version(String.format("1.0.%s",
-                                                                    Math.abs(component.hashCode())))
+                                                                    0))
                                                             .data(component.toDocument())
                                                             .build();
 
@@ -111,7 +111,7 @@ public class AnsibleImageBuilder extends AbstractImageBuilder {
                                                   .getImage(this)
                                                   .getImageId())
                                           .version(String.format("1.0.%s",
-                                                  Math.abs(component.hashCode())))
+                                                  0))
                                           .components(
                                                   Collections.singletonList(
                                                           CfnImageRecipe.ComponentConfigurationProperty
@@ -151,15 +151,17 @@ public class AnsibleImageBuilder extends AbstractImageBuilder {
                     Distribution d =Distribution.builder()
                                                 .region(r)
                                                 .amiDistributionConfiguration(
-                                                        AmiDistributionConfiguration.builder()
-                                                                                    .name(String.format("%s_{{ imagebuilder:buildDate }}",props.getImageName()))
-                                                                                    .description(props.getImageName())
-                                                                                    .launchPermissionConfiguration(
-                                                                                            LaunchPermission.builder()
-                                                                                                            .userIds(Collections.singletonList(a))
-                                                                                                            .build()
+                                                        AmiDistributionConfiguration
+                                                                .builder()
+                                                                .name(String.format("%s_{{ imagebuilder:buildDate }}",props.getImageName()))
+                                                                .description(props.getImageName())
+                                                                .launchPermissionConfiguration(
+                                                                                            LaunchPermission
+                                                                                                    .builder()
+                                                                                                    .userIds(Collections.singletonList(a))
+                                                                                                    .build()
                                                                                     )
-                                                                                    .build()
+                                                                .build()
                                                 )
                                                 .build();
                     distributions.add(d);
@@ -184,17 +186,7 @@ public class AnsibleImageBuilder extends AbstractImageBuilder {
                                                                     .enhancedImageMetadataEnabled(true)
                                                                     .distributionConfigurationArn(cfnDistributionConfiguration.getAttrArn()).build());
 
-            //log.debug(image.getNode().getChildren());
-            ((CfnResource) image).applyRemovalPolicy(RemovalPolicy.RETAIN);
-
-//            StringParameter param = StringParameter.Builder.create(this, "AmiId")
-//                                                           .type(ParameterType.AWS_EC2_IMAGE_ID)
-//                                                           .parameterName(String.format("/%s/AmiId", Stack
-//                                                                   .of(this)
-//                                                                   .getStackName()))
-//                                                           .stringValue(image.getAttrImageId())
-//                                                           .description("Machine image produced by EC2 image pipeline")
-//                                                           .build();
+            image.applyRemovalPolicy(RemovalPolicy.RETAIN);
 
             setPipelineArn(pipeline.getAttrArn());
             setAmiId(image.getAttrImageId());

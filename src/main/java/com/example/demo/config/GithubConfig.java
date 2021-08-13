@@ -9,7 +9,11 @@ import org.springframework.validation.annotation.Validated;
 import lombok.Data;
 
 /**
- * The type Git hub config.
+ * Externalised configuration for pipeline source configuration.
+ *
+ * NB: Even though its called GitHub it supports all git based repository sources. See
+ * <a href="https://docs.aws.amazon.com/codepipeline/latest/userguide/action-reference-CodestarConnectionSource.html">here</a>
+ * for more information.
  */
 @Data
 @Component
@@ -32,9 +36,8 @@ public class GithubConfig {
      */
     String branch = "main";
     /**
-     * The Token.
+     * The name of the AWS Secrets Manager secret containing a token with sufficient scope to clone the repository.
      */
     String token = "GITHUB_TOKEN";
-
 
 }
